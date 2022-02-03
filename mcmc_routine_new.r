@@ -36,17 +36,17 @@ package.install("expm")
 
 Q <- function(t,x_ik,beta){
 
-  betaMat = matrix(beta, ncol = 3, byrow = F) # ncol is 3 for time inhomogenous
-  q1  = exp( c(1,t,x_ik) %*% betaMat[1,] )  # Transition from state 1 to state 2.
-  q2  = exp( c(1,t,x_ik) %*% betaMat[2,] )  # Transition from state 2 to state 3.
-  q3  = exp( c(1,t,x_ik) %*% betaMat[3,] )  # Transition from state 1 to death.
-  q4  = exp( c(1,t,x_ik) %*% betaMat[4,] )  # Transition from state 2 to death.
-  q5  = exp( c(1,t,x_ik) %*% betaMat[5,] )  # Transition from state 3 to death.
+  betaMat = matrix(beta, ncol = 3, byrow = F) # determine the covariates
+  q1  = exp( c(1,t,x_ik) %*% betaMat[1,] )  # Transition from IS to NREM
+  q2  = exp( c(1,t,x_ik) %*% betaMat[2,] )  # Transition from IS to REM
+  q3  = exp( c(1,t,x_ik) %*% betaMat[3,] )  # Transition from NREM to IS
+  q4  = exp( c(1,t,x_ik) %*% betaMat[4,] )  # Transition from NREM to REM
+  q5  = exp( c(1,t,x_ik) %*% betaMat[5,] )  # Transition from REM to IS
+  q6  = exp( c(1,t,x_ik) %*% betaMat[6,] )  # Transition from REM to NREM
 
-  qmat = matrix(c( 0,q1, 0,q2,
-                   0, 0,q3,q4,
-                   0, 0, 0,q5,
-                   0, 0, 0, 0),nrow=4,byrow=TRUE)
+  qmat = matrix(c( 0,q1,q2,
+                  q3, 0,q4,
+                  q5,q6, 0),nrow=3,byrow=TRUE)
   diag(qmat) = -rowSums(qmat)
 
   return(qmat)
@@ -56,23 +56,24 @@ model_t <- function(t,p,parms) {
 
   betaMat <- matrix(parms$b, ncol = 3, byrow = F)
 
-  q1  = exp( c(1,t,parms$x_ik) %*% betaMat[1,] )  # Transition from state 1 to state 2.   c(1,floor(t),1)
-  q2  = exp( c(1,t,parms$x_ik) %*% betaMat[2,] )  # Transition from state 2 to state 3.   c(1,floor(t),1)
-  q3  = exp( c(1,t,parms$x_ik) %*% betaMat[3,] )  # Transition from state 1 to death.     c(1,floor(t),1)
-  q4  = exp( c(1,t,parms$x_ik) %*% betaMat[4,] )  # Transition from state 2 to death.     c(1,floor(t),1)
-  q5  = exp( c(1,t,parms$x_ik) %*% betaMat[5,] )  # Transition from state 3 to death.     c(1,floor(t),1)
+  q1  = exp( c(1,t,parms$x_ik) %*% betaMat[1,] )  # Transition from IS to NREM
+  q2  = exp( c(1,t,parms$x_ik) %*% betaMat[2,] )  # Transition from IS to REM
+  q3  = exp( c(1,t,parms$x_ik) %*% betaMat[3,] )  # Transition from NREM to IS
+  q4  = exp( c(1,t,parms$x_ik) %*% betaMat[4,] )  # Transition from NREM to REM
+  q5  = exp( c(1,t,parms$x_ik) %*% betaMat[5,] )  # Transition from REM to IS
+  q6  = exp( c(1,t,parms$x_ik) %*% betaMat[6,] )# Transition from REM to NREM
 
-  dP = rep(1,9) # this is the vector with all diffEqs
+  dP = rep(1,9) # this is the vector with all diffqs
 
-  dP[1] = p[1]*(-q1-q2)
-  dP[2] = p[1]*q1 + p[2]*(-q3-q4)
-  dP[3] = p[2]*q3 - p[3]*q5
-  dP[4] = p[1]*q2 + p[2]*q4 + p[3]*q5
-  dP[5] = p[5]*(-q3-q4)
-  dP[6] = p[5]*q3 - p[6]*q5
-  dP[7] = p[5]*q4 + p[6]*q5
-  dP[8] = -p[8]*q5
-  dP[9] = p[8]*q5
+  dP[1] = -p[1]*(q1+q2) + p[2]*q3 + p[3]*q5
+  dP[2] = p[1]*q1 - p[2]*(q3+q4) + p[3]*q6
+  dP[3] = p[1]*q2 + p[2]*q4 - p[3]*(q5+q6)
+  dP[4] = -p[4]*(q1+q2) + p[5]*q3 + p[6]*q5
+  dP[5] = p[4]*q1 - p[5]*(q3+q4) + p[6]q6
+  dP[6] = p[4]*q2 + p[5]*q4 - p[6]*(q5+q6)
+  dP[7] = -p[7]*(q1+q2) + p[8]*q3 + p[9]*q5
+  dP[8] = p[7]*q1 - p[8]*(q3+q4) + p[9]*q6
+  dP[9] = p[7]*q2 + p[8]*q4 - p[9]*(q5+q6)
 
   return(list(dP))
 
@@ -81,7 +82,7 @@ model_t <- function(t,p,parms) {
 
 fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, id) {
 
-  init_logit = c( 1, exp(pars[par_index$pi_logit][1]), exp(pars[par_index$pi_logit][2]), 0)
+  init_logit = c( 1, exp(pars[par_index$pi_logit][1]), exp(pars[par_index$pi_logit][2]))
   init = init_logit / sum(init_logit)
   resp_fnc = matrix(c(1, exp(pars[par_index$misclass][1]), 0,
                       exp(pars[par_index$misclass][2]), 1, exp(pars[par_index$misclass][3]),
@@ -109,24 +110,23 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, i
 
   	t_i = t[id == i]
 
-    d_1 = dnorm(y_2_i[1], mean = mu[1], sd = sigma[1])
-    d_2 = dnorm(y_2_i[1], mean = mu[2], sd = sigma[2])
-    d_3 = dnorm(y_2_i[1], mean = mu[3], sd = sigma[3])
+    d_1 = dnorm(y_2_i[1], mean = mu[1], sd = sigma)
+    d_2 = dnorm(y_2_i[1], mean = mu[2], sd = sigma)
+    d_3 = dnorm(y_2_i[1], mean = mu[3], sd = sigma)
 
- 	f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[1]])
+ 	f_i = init %*% diag(c(d_1,d_2,d_3) * resp_fnc[, y_1_i[1]])
 	log_norm = 0
     for(k in 2:length(t_i)) {
 
       out <- deSolve::ode(p_ic, times = t_i[(k-1):k], func = model_t, parms = list(b=beta, x_ik = x_i[k,]))
-      # WARNING IF-ELSE STATEMENT
-      P <- matrix(c(out[2,"p1"], out[2,"p2"], out[2,"p3"], out[2,"p4"],
-                    0, out[2,"p5"], out[2,"p6"], out[2,"p7"],
-                    0,  0, out[2,"p8"], out[2,"p9"],
-                    0,  0,  0,  1), nrow = 4, byrow = T)
 
-      d_1 = dnorm(y_2_i[k], mean = mu[1], sd = sigma[1])
-      d_2 = dnorm(y_2_i[k], mean = mu[2], sd = sigma[2])
-      d_3 = dnorm(y_2_i[k], mean = mu[3], sd = sigma[3])
+      P <- matrix(c(out[2,"p1"], out[2,"p2"], out[2,"p3"],
+                    out[2,"p4"], out[2,"p5"], out[2,"p6"],
+                    out[2,"p7"], out[2,"p8"], out[2,"p9"]), nrow = 3, byrow = T)
+
+      d_1 = dnorm(y_2_i[k], mean = mu[1], sd = sigma)
+      d_2 = dnorm(y_2_i[k], mean = mu[2], sd = sigma)
+      d_3 = dnorm(y_2_i[k], mean = mu[3], sd = sigma)
 
       D_i = diag(c(d_1,d_2,d_3) * resp_fnc[, y_1_i[k]])
 

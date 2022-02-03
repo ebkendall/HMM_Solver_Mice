@@ -4,21 +4,21 @@ ind = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 set.seed(ind)
 
 trueValues <- c(c(matrix(c(-2.29709805,  0.09266760, -0.56262135,
-                         -1.17308794, -5.10636947, -0.96162312,
-                         -1.71474254, -0.04338819,  0.83882558,
-                         -2.08300714,  0.03824367, -2.75345311,
-                         -2.42208380,  0.11315485,  1.76897841), ncol=3, byrow=T)),
-                         c(  -5.60251814, -0.84455697, -2.56906519, -2.12629033),
-                         c( -6.95125291, -7.07504453),
-                         c(10, 20, 30, 40),
-                         rep(1,4))
+                           -1.17308794, -5.10636947, -0.96162312,
+                           -1.71474254, -0.04338819,  0.83882558,
+                           -2.08300714,  0.03824367, -2.75345311,
+                           -2.42208380,  0.11315485,  1.76897841,
+                           -1.9       ,  0.15      ,  1.1  ), ncol=3, byrow=T)),
+                           c(  -5.60251814, -0.84455697, -2.56906519, -2.12629033),
+                           c( -6.95125291, -7.07504453), # these may be known with certainty
+                           c(10, 20, 30), #only three states
+                           1) # needs to be just 1 sigma
 
 init_par = trueValues
 
-par_index = list( beta=1:15, misclass=16:19, pi_logit=20:21, mu = 22:25, sigma = 26:29)
+par_index = list( beta=1:18, misclass=19:22, pi_logit=23:24, mu = 25:27, sigma = 28)
 
 betaMat <- matrix(trueValues[par_index$beta], ncol = 3, byrow = F)
-
 
 prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
                         prior_sd=rep( 20, length(init_par)))

@@ -4,11 +4,11 @@
 #SBATCH --array=1-100
 #SBATCH --account=jantonelli
 #SBATCH --qos=jantonelli-b
-#SBATCH --job-name=cavRun
+#SBATCH --job-name=miceRun
 #SBATCH --time=01:00:00
 #SBATCH -t 4000
 #SBATCH --mem=1gb
 
 module load R/4.0
 
-R CMD BATCH --no-save cav_simulate.r DataOut/a_out/trial${SLURM_ARRAY_TASK_ID}.Rout
+R CMD BATCH --no-save mice_simulate.r DataOut/a_out/trial${SLURM_ARRAY_TASK_ID}.Rout
