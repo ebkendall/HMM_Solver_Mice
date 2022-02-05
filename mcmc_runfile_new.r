@@ -23,9 +23,9 @@ betaMat <- matrix(trueValues[par_index$beta], ncol = 3, byrow = F)
 prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
                         prior_sd=rep( 20, length(init_par)))
 
-load(paste0("DataOut/Continuous/cavData", ind, ".rda"))
+load(paste0("DataOut/Continuous/miceData", ind, ".rda"))
 
-temp_data = as.matrix(cavData); rownames(temp_data) = NULL
+temp_data = as.matrix(miceData); rownames(temp_data) = NULL
 id = temp_data[,"ptnum"]
 y_1 = temp_data[,"state"]
 y_2 = temp_data[,"cont_resp"]
