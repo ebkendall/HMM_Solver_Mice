@@ -99,14 +99,11 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, i
   log_total_val = foreach(i=unique(id), .combine='+', .export = c("model_t", "Q"), .packages = "deSolve") %dopar% {
 
 	val = 1
-    disc = F
 
 	y_1_i = y_1[id == i]
     y_2_i = y_2[id == i]
 
     x_i = x[id == i,"sex",drop = F]
-
-    if(disc==T) disc_t_i = x[id == i,"disc_time",drop = F]
 
   	t_i = t[id == i]
 
@@ -137,7 +134,6 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, i
 	  log_norm = log_norm + log(norm_val)
     }
 
-	 # return(sum(val))
 	return(log(sum(f_i)) + log_norm)
   }
 
@@ -229,7 +225,8 @@ mcmc_routine = function( y_1, y_2, x, t, id, init_par, prior_par, par_index,
   n_par = length(pars)
   chain = matrix( 0, steps, n_par)
 
-  group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit))
+  group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit,
+                 par_index$mu, par_index$sigma))
   n_group = length(group)
 
   pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
@@ -277,8 +274,8 @@ mcmc_routine = function( y_1, y_2, x, t, id, init_par, prior_par, par_index,
         accept[j] = accept[j] +1
       }
       chain[ttt,ind_j] = pars[ind_j]
-      # print("Parameters Accepted")
-      # print(pars)
+      print("Parameters Accepted")
+      print(pars)
 
       # Proposal tuning scheme ------------------------------------------------
       if(ttt < burnin){
