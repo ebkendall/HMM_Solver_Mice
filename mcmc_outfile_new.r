@@ -40,8 +40,6 @@ par_index = list( beta=1:18, misclass=19:22, pi_logit=23:24, mu = 25:27, sigma =
 # true_par[par_index$misclass[4]] =
 #     exp(true_par[par_index$misclass[4]])/(1 + exp(true_par[par_index$misclass[4]]))
 
-print(true_par)
-
 labels <- c('b.l. S1  --->   S2 ',
             'b.l. S1  --->   S3 ',
             'b.l. S2  --->   S1 ',
@@ -76,27 +74,29 @@ labels <- c('b.l. S1  --->   S2 ',
 cred_set = vector(mode = 'list', length = length(true_par))
 for(i in 1:length(cred_set)) {cred_set[[i]] = data.frame('lower' = c(-1), 'upper' = c(-1))}
 
+my_ind = 0
 for (i in index_seeds) {
     file_name = paste0(dir,'mcmc_out_',toString(i),'.rda')
+    if(file.exists(file_name)) {
+        load(file_name)
+        my_ind = my_ind + 1
+        # Inverse logit to convert back to probabilities
+        # mcmc_out$chain[,par_index$pi_logit] =
+        #     exp(mcmc_out$chain[,par_index$pi_logit])/(1 + exp(mcmc_out$chain[,par_index$pi_logit]))
+        # mcmc_out$chain[,par_index$misclass[1]] =
+        #     exp(mcmc_out$chain[,par_index$misclass[1]])/(1 + exp(mcmc_out$chain[,par_index$misclass[1]]))
+        # mcmc_out$chain[,par_index$misclass[2:3]] = exp(mcmc_out$chain[,par_index$misclass[2:3]])/(1 +
+        #                                            exp(mcmc_out$chain[,par_index$misclass[2]]) +
+        #                                            exp(mcmc_out$chain[,par_index$misclass[3]]))
+        # mcmc_out$chain[,par_index$misclass[4]] =
+        #     exp(mcmc_out$chain[,par_index$misclass[4]])/(1 + exp(mcmc_out$chain[,par_index$misclass[4]]))
 
-    load(file_name)
-
-    # Inverse logit to convert back to probabilities
-    # mcmc_out$chain[,par_index$pi_logit] =
-    #     exp(mcmc_out$chain[,par_index$pi_logit])/(1 + exp(mcmc_out$chain[,par_index$pi_logit]))
-    # mcmc_out$chain[,par_index$misclass[1]] =
-    #     exp(mcmc_out$chain[,par_index$misclass[1]])/(1 + exp(mcmc_out$chain[,par_index$misclass[1]]))
-    # mcmc_out$chain[,par_index$misclass[2:3]] = exp(mcmc_out$chain[,par_index$misclass[2:3]])/(1 +
-    #                                            exp(mcmc_out$chain[,par_index$misclass[2]]) +
-    #                                            exp(mcmc_out$chain[,par_index$misclass[3]]))
-    # mcmc_out$chain[,par_index$misclass[4]] =
-    #     exp(mcmc_out$chain[,par_index$misclass[4]])/(1 + exp(mcmc_out$chain[,par_index$misclass[4]]))
-
-    for(j in 1:length(true_par)) {
-        cred_set[[j]][i,1] =  round(quantile( mcmc_out$chain[index_post,j],
-                                    prob=.025), 4)
-        cred_set[[j]][i,2] =  round(quantile( mcmc_out$chain[index_post,j],
-                                    prob=.975), 4)
+        for(j in 1:length(true_par)) {
+            cred_set[[j]][my_ind,1] =  round(quantile( mcmc_out$chain[index_post,j],
+                                        prob=.025), 4)
+            cred_set[[j]][my_ind,2] =  round(quantile( mcmc_out$chain[index_post,j],
+                                        prob=.975), 4)
+        }
     }
 }
 
@@ -118,30 +118,32 @@ for(i in 1:length(true_par)) {
 # Create mcmc trace plots and histograms
 # -----------------------------------------------------------------------------
 
-post_means = matrix(nrow = length(index_seeds), ncol = length(labels))
-chain_list = vector(mode = "list", length = length(index_seeds))
-
+post_means = matrix(nrow = my_ind, ncol = length(labels))
+chain_list = vector(mode = "list", length = my_ind)
+my_ind = 0
 for(seed in index_seeds){
     file_name = paste0(dir,'mcmc_out_',toString(seed),'.rda')
+    if(file.exists(file_name)) {
+        load(file_name)
+        my_ind = my_ind + 1
+        print(mcmc_out$accept)
 
-    load(file_name)
-
-    print(mcmc_out$accept)
-
-    # Inverse logit to convert back to probabilities
-    # mcmc_out$chain[,par_index$pi_logit] =
-    #     exp(mcmc_out$chain[,par_index$pi_logit])/(1 + exp(mcmc_out$chain[,par_index$pi_logit]))
-    # mcmc_out$chain[,par_index$misclass[1]] =
-    #     exp(mcmc_out$chain[,par_index$misclass[1]])/(1 + exp(mcmc_out$chain[,par_index$misclass[1]]))
-    # mcmc_out$chain[,par_index$misclass[2:3]] = exp(mcmc_out$chain[,par_index$misclass[2:3]])/(1 +
-    #                                            exp(mcmc_out$chain[,par_index$misclass[2]]) +
-    #                                            exp(mcmc_out$chain[,par_index$misclass[3]]))
-    # mcmc_out$chain[,par_index$misclass[4]] =
-    #     exp(mcmc_out$chain[,par_index$misclass[4]])/(1 + exp(mcmc_out$chain[,par_index$misclass[4]]))
+        # Inverse logit to convert back to probabilities
+        # mcmc_out$chain[,par_index$pi_logit] =
+        #     exp(mcmc_out$chain[,par_index$pi_logit])/(1 + exp(mcmc_out$chain[,par_index$pi_logit]))
+        # mcmc_out$chain[,par_index$misclass[1]] =
+        #     exp(mcmc_out$chain[,par_index$misclass[1]])/(1 + exp(mcmc_out$chain[,par_index$misclass[1]]))
+        # mcmc_out$chain[,par_index$misclass[2:3]] = exp(mcmc_out$chain[,par_index$misclass[2:3]])/(1 +
+        #                                            exp(mcmc_out$chain[,par_index$misclass[2]]) +
+        #                                            exp(mcmc_out$chain[,par_index$misclass[3]]))
+        # mcmc_out$chain[,par_index$misclass[4]] =
+        #     exp(mcmc_out$chain[,par_index$misclass[4]])/(1 + exp(mcmc_out$chain[,par_index$misclass[4]]))
 
 
-    chain_list[[seed]] = mcmc_out$chain[index_post,]
-    post_means[seed,] <- colMeans(mcmc_out$chain[index_post,])
+        chain_list[[my_ind]] = mcmc_out$chain[index_post,]
+        post_means[my_ind,] <- colMeans(mcmc_out$chain[index_post,])
+    }
+
 }
 
 # Plot and save the mcmc trace plots and histograms.
@@ -181,7 +183,7 @@ for(r in 1:length(labels)) {
 
     yVar = post_means[,r]
     disc_type = rep("Continuous", nrow(post_means))
-    x_label = paste0("Coverage is: ", cov_df[r])
+    x_label = paste0("Coverage is: ", round(cov_df[r], digits = 3))
 
     plot_df = data.frame(yVar = yVar, disc_type = disc_type)
     VP[[r]] = ggplot(plot_df, aes(x=disc_type, y = yVar)) +
