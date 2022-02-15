@@ -5,6 +5,7 @@ library(doParallel, quietly=T)
 library(msm)
 library(deSolve)
 library(expm)
+library(gtools)
 
 Q <- function(t,x_ik,beta){
 
