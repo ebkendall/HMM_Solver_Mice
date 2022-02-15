@@ -8,13 +8,7 @@ file_names = c("Mice_Data/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG 
 # of transitions we get
 for (i in 1:4) {
   mice_data = read.csv(file_names[i])
-  
-  # for(j in 1:nrow(mice_data)) {
-  #   if(mice_data$state[j] != "<undefined>") {
-  #     print(paste0("Time: ", mice_data$t[j], ", State: ", mice_data$state[j]))
-  #   }
-  # }
-  
+
   transition_mat = matrix(0, nrow = 4, ncol = 4)
   colnames(transition_mat) = c("<undefined>", "IS", "NREM", "REM")
   rownames(transition_mat) = c("<undefined>", "IS", "NREM", "REM")

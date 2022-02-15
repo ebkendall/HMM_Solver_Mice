@@ -51,7 +51,8 @@ model_t <- function(t,p,parms) {
 fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, id) {
 
     # Order: Awake, IS, NREM, REM
-    init_logit = c( 1, exp(pars[par_index$pi_logit][1]), exp(pars[par_index$pi_logit][2]), 0)
+    init_logit = c( 1, exp(pars[par_index$pi_logit][1]), 
+                    exp(pars[par_index$pi_logit][2]), 0)
     init = init_logit / sum(init_logit)
 
     # the misclassification response function looks like the following
@@ -82,7 +83,9 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, i
               p8=0, p9=0,p10=1,p11=0,
                    p12=0,p13=0,p14=1)
 
-    log_total_val = foreach(i=unique(id), .combine='+', .export = c("model_t", "Q"), .packages = "deSolve") %dopar% {
+    log_total_val = foreach(i=unique(id), .combine='+', 
+                            .export = c("model_t", "Q"), 
+                            .packages = "deSolve") %dopar% {
 
         val = 1
 
@@ -101,7 +104,9 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, i
         log_norm = 0
         for(k in 2:length(t_i)) {
 
-            out <- deSolve::ode(p_ic, times = t_i[(k-1):k], func = model_t, parms = list(b=beta, x_ik = x_i[k,]))
+            out <- deSolve::ode(p_ic, times = t_i[(k-1):k], 
+                                      func = model_t, 
+                                      parms = list(b=beta, x_ik = x_i[k,]))
 
             P <- matrix(c(out[2,"p1"], out[2,"p2"], out[2,"p3"],
                         out[2,"p4"], out[2,"p5"], out[2,"p6"],
@@ -174,7 +179,9 @@ mcmc_routine = function( y_1, y_2, x, t, id, init_par, prior_par, par_index,
       proposal[ind_j] = rmvnorm( n=1, mean=pars[ind_j],sigma=pcov[[j]]*pscale[j])
 
       # Compute the log density for the proposal
-      log_post = fn_log_post_continuous(proposal, prior_par, par_index, x, y_1, y_2, t, id)
+      log_post = fn_log_post_continuous(proposal, prior_par, 
+                                        par_index, x, y_1, y_2, 
+                                        t, id)
       # print("Likelihood Evaluation:")
       # print(log_post)
 
@@ -185,7 +192,9 @@ mcmc_routine = function( y_1, y_2, x, t, id, init_par, prior_par, par_index,
           proposal = pars
           proposal[ind_j] = rmvnorm( n=1, mean=pars[ind_j],
                                      sigma=pcov[[j]]*pscale[j])
-          log_post = fn_log_post_continuous(proposal, prior_par, par_index, x, y_1, y_2, t, id)
+          log_post = fn_log_post_continuous(proposal, prior_par, 
+                                            par_index, x, y_1, y_2, 
+                                            t, id)
         }
       }
 

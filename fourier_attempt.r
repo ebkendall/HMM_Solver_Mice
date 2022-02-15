@@ -1,6 +1,15 @@
 library(signal)
 library(eegkit)
 
+# Exploring the sparcity of the state labels
+# for(j in 1:nrow(mice_data)) {
+#   if(mice_data$state[j] != "<undefined>") {
+#     print(paste0("Time: ", mice_data$t[j], ", State: ", mice_data$state[j]))
+#   }
+# }
+
+Dir <- "~/Dropbox/Shared_HMM_ICU/mouse_data/"
+
 file_names = c("Mice_Data/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv",
                "Mice_Data/WT 08 20210311 06 Penetrating Arteriole 065 ECoG, EMG and sleep.csv",
                "Mice_Data/WT 08 20210311 10 Penetrating Arteriole 066 ECoG, EMG and sleep.csv",
