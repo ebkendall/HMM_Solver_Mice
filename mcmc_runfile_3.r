@@ -1,4 +1,4 @@
-source("mcmc_routine.r")
+source("mcmc_routine_3.r")
 
 # ind = as.numeric(Sys.getenv('LSB_JOBINDEX'))
 

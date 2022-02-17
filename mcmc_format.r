@@ -1,20 +1,6 @@
-# This is where we will load the time series and clean the data such that it 
-# is formatted in the way that we want. In other words, for every 5 seconds,
-# we will have a time measure, and then four proportions for the different times
-# as well as the different states.
-
 # Questions / Concerns ---------------------------------------------------------
-# 1) How to deal with the fact that separate data frames are involving separate
-#   states (i.e. one has sleep properties and the other has awake properties)
-# 2) How to deal with time periods with overlapping states
-# 3) We have much fewer subjects in the mice data example; from an inference 
-#   perspective, will having a lot of observations per person make up for the 
-#   lack of large sample size?
-
-# Good example of SLEEP: 
-#    WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv
-# Good example of AWAKE: 
-#    WT 11 20210705 05 Penetrating Arteriole 114 ECoG, EMG and sleep.csv
+# 5) The lambdas have to be greater than 0, recommendations for when we do mcmc?
+# 7) figure out the deSolve::ode issue with possible transition probabilities
 
 library(signal)
 library(eegkit)
@@ -68,12 +54,9 @@ seed_num = as.numeric(args[1])
 set.seed(seed_num)
 
 state_names = NULL
-if (seed_num == 1) {
-  state_names <- c("Awake", "Clean IS", "Clean NREM", "Clean REM", "<undefined>")
-} else {
-  state_names <- c("Sleep", "Clean Quiet", "Clean Locomotion",
-                   "Clean Whisking", "<undefined>")
-}
+
+state_names <- c("Clean IS", "Clean NREM", "Clean REM", "<undefined>")
+
 
 mice_data = read.csv(paste0(Dir, file_names[seed_num]))
 
@@ -114,7 +97,8 @@ for(i in 1:(length(index_seq) - 1)) {
   # }
 
   print(paste0(i, "  ", s))
-  mice_format[i,] = c(t1, t2, s, wave_prop)
+  mice_format[i,] = c(as.numeric(t1), as.numeric(t2), 
+                      as.numeric(s), as.numeric(wave_prop))
 }
 
 mice_format$ptnum = rep(1, nrow(mice_format))
