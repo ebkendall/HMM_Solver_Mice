@@ -66,13 +66,15 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, i
   sigma = pars[par_index$sigma]
 
   beta <- pars[par_index$beta]
-  p_ic <- c(p1=1,p2=0,p3=0,p4=0,p5=1,p6=0,p7=0,p8=1,p9=0)
+  p_ic <- c(p1=1,p2=0,p3=0,
+            p4=0,p5=1,p6=0,
+            p7=0,p8=0,p9=1)
 
   log_total_val = foreach(i=unique(id), .combine='+', .export = c("model_t", "Q"), .packages = "deSolve") %dopar% {
 
-	val = 1
+  	val = 1
 
-	y_1_i = y_1[id == i]
+	  y_1_i = y_1[id == i]
     y_2_i = y_2[id == i]
 
     x_i = x[id == i,"sex",drop = F]
@@ -83,8 +85,8 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, x, y_1, y_2, t, i
     d_2 = dnorm(y_2_i[1], mean = mu[2], sd = sigma)
     d_3 = dnorm(y_2_i[1], mean = mu[3], sd = sigma)
 
- 	f_i = init %*% diag(c(d_1,d_2,d_3) * resp_fnc[, y_1_i[1]])
-	log_norm = 0
+   	f_i = init %*% diag(c(d_1,d_2,d_3) * resp_fnc[, y_1_i[1]])
+  	log_norm = 0
     for(k in 2:length(t_i)) {
 
       out <- deSolve::ode(p_ic, times = t_i[(k-1):k], func = model_t, parms = list(b=beta, x_ik = x_i[k,]))
