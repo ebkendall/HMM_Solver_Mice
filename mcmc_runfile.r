@@ -1,10 +1,7 @@
 source("mcmc_routine.r")
 
 # ind = as.numeric(Sys.getenv('LSB_JOBINDEX'))
-
-args = commandArgs(TRUE)
-
-ind = as.numeric(args[1])
+ind = 10
 
 set.seed(ind)
 
@@ -14,11 +11,11 @@ init_par = pars = c(c(matrix(c(-2.26568339,  0.08766060,
                                -1.56180104, -0.08262607,
                                -2.20978996,  0.05404948,
                                -2.41222255,  0.10833734,
-                               -1.9       ,  0.07      ,
-                               -1.0       ,  0.1       ,
-                               -1.0       ,  0.1       ,
-                               -1.0       ,  0.1       ,
-                               -1.0       ,  0.1       ), ncol=2, byrow=T)),
+                               -2.26568339,  0.08766060,
+                               -1.22022878, -4.44888558,
+                               -1.56180104, -0.08262607,
+                               -2.20978996,  0.05404948,
+                               -2.41222255,  0.10833734), ncol=2, byrow=T)),
                                c(-3.444682, -3.850148, -4.543295,
                                  -3.218876, -1.321756, -3.624341,
                                  -3.624341, -1.321756, -3.218876,
@@ -35,7 +32,7 @@ par_index = list( beta=1:20, misclass=21:32, pi_logit=33:34,
 prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
                         prior_sd=rep( 20, length(init_par)))
 
-load(paste0("Data_format/mice_format_", ind, ".rda"))
+load("Data_format/mice_format.rda")
 
 temp_data = as.matrix(mice_format); rownames(temp_data) = NULL
 id = temp_data[,"ptnum"]

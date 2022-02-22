@@ -1,32 +1,21 @@
-# Questions / Concerns ---------------------------------------------------------
-# 5) The lambdas have to be greater than 0, recommendations for when we do mcmc?
-# 7) figure out the deSolve::ode issue with possible transition probabilities
-
-library(signal)
-library(eegkit)
-
 fft_fnc <- function(test) {
   
-  f_delta = eegfilter(test$ecog, Fs = length(which(mice_data$t < 1)), 
-                      lower = 1, upper = 4, method = "butter")
-  f_theta = eegfilter(test$ecog, Fs = length(which(mice_data$t < 1)), 
-                      lower = 4, upper = 7, method = "butter")
-  f_alpha = eegfilter(test$ecog, Fs = length(which(mice_data$t < 1)), 
-                      lower = 7, upper = 12, method = "butter")
-  f_beta  = eegfilter(test$ecog, Fs = length(which(mice_data$t < 1)), 
-                      lower = 12, upper = 30, method = "butter")
+  omega = seq(0, 1/(test$t[2] - test$t[1]), length.out =length(test$t))
   
-  # plot(test$t, test$ecog, type = "l", lty = 1, lwd = 2, ylim = c(-1, 1))
-  # lines(test$t, f_delta, col = "blue", lty = 2, lwd = 2)
-  # lines(test$t, f_theta, col = "red", lty = 2, lwd = 2)
-  # lines(test$t, f_alpha, col = "green", lty = 2, lwd = 2)
-  # lines(test$t, f_beta, col = "purple", lty = 2, lwd = 2)
+  omega_color = omega
   
+  omega_color[which(omega >= 0.8 & omega < 4 )] = 1
+  omega_color[which(omega >= 4   & omega < 7 )] = 2
+  omega_color[which(omega >= 7   & omega < 12)] = 3
+  omega_color[which(omega >= 12  & omega < 30)] = 4
+  omega_color[which(omega >= 30 | omega < 0.8)] = 5
   
-  fft_delta = fft(f_delta)
-  fft_theta = fft(f_theta)
-  fft_alpha = fft(f_alpha)
-  fft_beta  = fft(f_beta)
+  fft_new = fft(test$ecog)
+  
+  fft_delta = fft_new[omega_color == 1]
+  fft_theta = fft_new[omega_color == 2]
+  fft_alpha = fft_new[omega_color == 3]
+  fft_beta  = fft_new[omega_color == 4]
   
   s_power_delta = sum(abs(fft_delta)^2) / (2 * pi * length(fft_delta))
   s_power_theta = sum(abs(fft_theta)^2) / (2 * pi * length(fft_theta))
@@ -43,23 +32,13 @@ fft_fnc <- function(test) {
   return(c(s_pow_delta_norm, s_pow_theta_norm, s_pow_alpha_norm, s_pow_beta_norm))
 }
 
-Dir <- "~/Dropbox/Shared_HMM_ICU/mouse_data/"
+Dir <- "~/Dropbox/Shared_HMM_ICU/mouse_data/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv"
 
-file_names <- c("WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv",
-                "WT 11 20210705 05 Penetrating Arteriole 114 ECoG, EMG and sleep.csv")
+mice_data = read.csv(Dir)
 
-args = commandArgs(TRUE)
+state_names <- c("Limbo", "Clean IS", "Clean NREM", "Clean REM", "<undefined>")
 
-seed_num = as.numeric(args[1])
-set.seed(seed_num)
-
-state_names = NULL
-
-state_names <- c("Clean IS", "Clean NREM", "Clean REM", "<undefined>")
-
-
-mice_data = read.csv(paste0(Dir, file_names[seed_num]))
-
+# How do these proportions change over time (every 5 seconds)
 index_seq = seq(1, nrow(mice_data), 2560)
 mice_format = data.frame("t1" = rep(NA, length(index_seq) - 1), 
                          "t2" = rep(NA, length(index_seq) - 1),
@@ -83,47 +62,18 @@ for(i in 1:(length(index_seq) - 1)) {
   for(jj in 1:length(unique(test$state))) {
     temp_s = unique(test$state)[jj]
     state_num = which(state_names == temp_s)
-
+    
     if(state_num == 5) {state_num = 99}
     s = paste0(s, state_num)
   }
-
-  # if(length(unique(test$state)) == 1) {
-  #   if(unique(test$state) == "<undefined>") {
-  #     s = -1
-  #   } else { s = unique(test$state) }
-  # } else {
-  #   s = -1 * length(unique(test$state))
-  # }
-
+  
   print(paste0(i, "  ", s))
   mice_format[i,] = c(as.numeric(t1), as.numeric(t2), 
                       as.numeric(s), as.numeric(wave_prop))
 }
 
 mice_format$ptnum = rep(1, nrow(mice_format))
-
-# plot(mice_format$t1, mice_format$delta, type = "l", lty = 1, lwd = 2, xlim = c(0,300))
-# lines(mice_format$t1, mice_format$theta, col = "blue", lty = 1, lwd = 2)
-# lines(mice_format$t1, mice_format$alpha, col = "red", lty = 1, lwd = 2)
-# lines(mice_format$t1, mice_format$beta, col = "green", lty = 1, lwd = 2)
-
-# Investigating how frequently the time between states changes
-# freq_df = data.frame("start" = c(1), "end" = c(1), "state" = c(1))
-# freq_df[1,] = c(mice_data$t[1], mice_data$t[1], mice_data$state[1])
-# row_num = 1
-# for (i in 2:nrow(mice_data)) {
-#   if(mice_data$state[i] != mice_data$state[i-1]) {
-#     freq_df$end[row_num] = mice_data$t[i-1]
-#     row_num = row_num + 1
-#     freq_df[row_num,] = c(mice_data$t[i], mice_data$t[i], mice_data$state[i])
-#   } else {
-#     freq_df$end[row_num] = mice_data$t[i]
-#   }
-# }
-
-# freq_df$start = as.numeric(freq_df$start)
-# freq_df$end = as.numeric(freq_df$end)
-
-save(mice_format, file = paste0("Data_format/mice_format_", seed_num, ".rda"))
+mice_format$state[which(mice_format$state > 4)] = 99
+print(unique(mice_format$state))
+save(mice_format, file = paste0("Data_format/mice_format.rda"))
 

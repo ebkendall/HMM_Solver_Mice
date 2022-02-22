@@ -11,21 +11,22 @@ Q <- function(t,beta){
 
     betaMat = matrix(beta, ncol = 2, byrow = F) # determine the covariates
   
-    q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from AWAKE to IS
-    q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from AWAKE to NREM
-    q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to AWAKE
+    q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from LIMBO to IS
+    q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from LIMBO to NREM
+    q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to LIMBO
     q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from IS    to NREM
     q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from IS    to REM
-    q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to AWAKE
+    q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
     q7  = exp( c(1,t) %*% betaMat[7,] )  # Transition from NREM  to IS
     q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from NREM  to REM
-    q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to IS
-    q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to NREM
+    q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
+    q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to IS
+    q11 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to NREM
     
     qmat = matrix(c(  0,  q1,  q2,  0,
                      q3,   0,  q4, q5,
                      q6,  q7,   0, q8,
-                      0,  q9, q10,  0),
+                     q9, q10, q11,  0),
                 nrow = 4, byrow = T)
     diag(qmat) = -rowSums(qmat)
 
@@ -50,7 +51,7 @@ model_t <- function(t,p,parms) {
 
 fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) {
 
-    # Order: Awake, IS, NREM, REM
+    # Order: LIMBO, IS, NREM, REM
     init_logit = c( 1, exp(pars[par_index$pi_logit][1]), 
                     exp(pars[par_index$pi_logit][2]), 0)
     init = init_logit / sum(init_logit)
@@ -74,7 +75,8 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
     lambda_mat = matrix(c(pars[par_index$l_delta], pars[par_index$l_theta],
                           pars[par_index$l_alpha], pars[par_index$l_beta]),
                         nrow = 4, byrow = T)
-    rownames(lambda_mat) = c("delta", "theta", "alpha", "beta")
+    colnames(lambda_mat) = c("delta", "theta", "alpha", "beta")
+    rownames(lambda_mat) = c("LIMBO", "IS", "NREM", "REM")
 
     beta <- pars[par_index$beta]
 
@@ -87,7 +89,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
   
     log_total_val = foreach(i=unique(id), .combine='+', 
                             .export = c("model_t", "Q"), 
-                            .packages = c("deSolve", "gtools")) %dopar% {
+                            .packages = c("deSolve", "gtools")) %do% {
 
         f_i = val = 1
 
@@ -103,7 +105,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
         
         if(y_1_i[1] <= 4) { # observed
           f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[1]])
-        } else { # unknown (how to handle; treat as knowing awake)
+        } else { # unknown (how to handle; treat as knowing LIMBO)
           f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
         }
 
@@ -120,6 +122,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
                            out[2,"p9"], out[2,"p10"], out[2,"p11"], out[2,"p12"],
                           out[2,"p13"], out[2,"p14"], out[2,"p15"], out[2,"p16"]),
                         nrow = 4, byrow = T)
+            print(P)
 
             d_1 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[1,])
             d_2 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[2,])
@@ -128,7 +131,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
 
             if(y_1_i[1] <= 4) { # observed
               D_i = diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[k]])
-            } else { # unknown (how to handle; treat as knowing awake)
+            } else { # unknown (how to handle; treat as knowing LIMBO)
               D_i = diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
             }
 
@@ -273,12 +276,12 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
 
 #     betaMat = matrix(beta, ncol = 4, byrow = F) # determine the covariates
   
-#     q1  = exp( c(1,t,x_ik) %*% betaMat[1,] )  # Transition from AWAKE to IS
-#     q2  = exp( c(1,t,x_ik) %*% betaMat[2,] )  # Transition from AWAKE to NREM
-#     q3  = exp( c(1,t,x_ik) %*% betaMat[3,] )  # Transition from IS    to AWAKE
+#     q1  = exp( c(1,t,x_ik) %*% betaMat[1,] )  # Transition from LIMBO to IS
+#     q2  = exp( c(1,t,x_ik) %*% betaMat[2,] )  # Transition from LIMBO to NREM
+#     q3  = exp( c(1,t,x_ik) %*% betaMat[3,] )  # Transition from IS    to LIMBO
 #     q4  = exp( c(1,t,x_ik) %*% betaMat[4,] )  # Transition from IS    to NREM
 #     q5  = exp( c(1,t,x_ik) %*% betaMat[5,] )  # Transition from IS    to REM
-#     q6  = exp( c(1,t,x_ik) %*% betaMat[6,] )  # Transition from NREM  to AWAKE
+#     q6  = exp( c(1,t,x_ik) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
 #     q7  = exp( c(1,t,x_ik) %*% betaMat[7,] )  # Transition from NREM  to IS
 #     q8  = exp( c(1,t,x_ik) %*% betaMat[8,] )  # Transition from NREM  to REM
 #     q9  = exp( c(1,t,x_ik) %*% betaMat[9,] )  # Transition from REM   to IS
