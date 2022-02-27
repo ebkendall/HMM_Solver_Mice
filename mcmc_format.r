@@ -1,5 +1,17 @@
-fft_fnc <- function(test) {
+args = commandArgs(TRUE)
+han = as.numeric(args[1])
+
+fft_fnc <- function(test, han) {
   
+  # Hann weighting window
+  if(han == 1) {
+    K = nrow(test)
+    k = 1:K
+    w_k = 0.5 - 0.5 * cos(2 * pi * k / (K-1))
+    test$ecog = test$ecog * w_k
+  }
+  
+  # Formatting
   omega = seq(0, 1/(test$t[2] - test$t[1]), length.out =length(test$t))
   
   omega_color = omega
@@ -52,7 +64,7 @@ for(i in 1:(length(index_seq) - 1)) {
   
   test = mice_data[index_seq[i]:index_seq[i+1], ] # grabs data every 5 seconds
   
-  wave_prop = fft_fnc(test)
+  wave_prop = fft_fnc(test, han)
   
   t1 = head(test$t,1)
   t2 = tail(test$t,1)
@@ -75,5 +87,5 @@ for(i in 1:(length(index_seq) - 1)) {
 mice_format$ptnum = rep(1, nrow(mice_format))
 mice_format$state[which(mice_format$state > 4)] = 99
 print(unique(mice_format$state))
-save(mice_format, file = paste0("Data_format/mice_format.rda"))
+save(mice_format, file = paste0("Data_format/mice_format_", han, ".rda"))
 

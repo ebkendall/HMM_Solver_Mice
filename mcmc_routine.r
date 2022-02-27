@@ -21,7 +21,7 @@ Q <- function(t,beta){
     q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from NREM  to REM
     q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
     q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to IS
-    q11 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to NREM
+    q11 = exp( c(1,t) %*% betaMat[11,] ) # Transition from REM   to NREM
     
     qmat = matrix(c(  0,  q1,  q2,  0,
                      q3,   0,  q4, q5,
@@ -47,47 +47,6 @@ model_t <- function(t,p,parms) {
 
 }
 
-# model_t <- function(t,p,parms) {
-
-#     betaMat = matrix(parms$b, ncol = 2, byrow = F) # determine the covariates
-  
-#     q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from LIMBO to IS
-#     q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from LIMBO to NREM
-#     q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to LIMBO
-#     q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from IS    to NREM
-#     q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from IS    to REM
-#     q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
-#     q7  = exp( c(1,t) %*% betaMat[7,] )  # Transition from NREM  to IS
-#     q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from NREM  to REM
-#     q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
-#     q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to IS
-#     q11 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to NREM
-
-#     dP = rep(1, 16)
-
-#     dP[1] = (-q1 - q2)*p[1] + q3*p[2] + q6*p[3] + q9*p[4]
-#     dP[2] = q1*p[1] + (-q3-q4-q5)*p[2] + q7*p[3] + q10*p[4]
-#     dP[3] = q2*p[1] + q4*p[2] + (-q6-q7-q8)*p[3] + q11*p[4]
-#     dP[4] = 0 + q5*p[2] + q8*p[3] + (-q9-q10-q11)*p[4]
-
-#     dP[5] = (-q1 - q2)*p[5] + q3*p[6] + q6*p[7] + q9*p[8]
-#     dP[6] = q1*p[5] + (-q3-q4-q5)*p[6] + q7*p[7] + q10*p[8]
-#     dP[7] = q2*p[5] + q4*p[6] + (-q6-q7-q8)*p[7] + q11*p[8]
-#     dP[8] = 0 + q5*p[6] + q8*p[7] + (-q9-q10-q11)*p[8]
-
-#     dP[9] = (-q1 - q2)*p[9] + q3*p[10] + q6*p[11] + q9*p[12]
-#     dP[10] = q1*p[9] + (-q3-q4-q5)*p[10] + q7*p[11] + q10*p[12]
-#     dP[11] = q2*p[9] + q4*p[10] + (-q6-q7-q8)*p[11] + q11*p[12]
-#     dP[12] = 0 + q5*p[10] + q8*p[11] + (-q9-q10-q11)*p[12]
-
-#     dP[13] = (-q1 - q2)*p[13] + q3*p[14] + q6*p[15] + q9*p[16]
-#     dP[14] = q1*p[13] + (-q3-q4-q5)*p[14] + q7*p[15] + q10*p[16]
-#     dP[15] = q2*p[13] + q4*p[14] + (-q6-q7-q8)*p[15] + q11*p[16]
-#     dP[16] = 0 + q5*p[14] + q8*p[15] + (-q9-q10-q11)*p[16]
-
-#     return(list(dP))
-
-# }
 
 fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) {
 
@@ -96,11 +55,6 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
                     exp(pars[par_index$pi_logit][2]), 0)
     init = init_logit / sum(init_logit)
 
-    # the misclassification response function looks like the following
-    # (0.94, 0.03, 0.02, 0.01)
-    # (0.03, 0.75, 0.20, 0.02)
-    # (0.02, 0.20, 0.75, 0.03)
-    # (0.01, 0.02, 0.03, 0.94)
     resp_fnc = matrix(c(1, exp(pars[par_index$misclass][1]), 
             exp(pars[par_index$misclass][2]), exp(pars[par_index$misclass][3]),
             exp(pars[par_index$misclass][4]), 1, 
@@ -118,6 +72,8 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
     colnames(lambda_mat) = c("delta", "theta", "alpha", "beta")
     rownames(lambda_mat) = c("LIMBO", "IS", "NREM", "REM")
 
+    lambda_mat = exp(lambda_mat)
+
     beta <- pars[par_index$beta]
 
     # Needs to be the same dimension as the dP in model_t() and represent the 
@@ -129,7 +85,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
   
     log_total_val = foreach(i=unique(id), .combine='+', 
                             .export = c("model_t", "Q"), 
-                            .packages = c("deSolve", "gtools")) %do% {
+                            .packages = c("deSolve", "gtools")) %dopar% {
 
         f_i = val = 1
 
@@ -147,6 +103,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
           f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[1]])
         } else { # unknown (how to handle; treat as knowing LIMBO)
           f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
+          # f_i = init %*% diag(c(d_1,d_2,d_3,d_4))
         }
 
         log_norm = 0
@@ -162,7 +119,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
                            out[2,"p9"], out[2,"p10"], out[2,"p11"], out[2,"p12"],
                           out[2,"p13"], out[2,"p14"], out[2,"p15"], out[2,"p16"]),
                         nrow = 4, byrow = T)
-            print(P)
+            # print(P)
 
             d_1 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[1,])
             d_2 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[2,])
@@ -172,8 +129,8 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
             if(y_1_i[1] <= 4) { # observed
               D_i = diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[k]])
             } else { # unknown 
-              # D_i = diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
-              D_i = diag(c(d_1,d_2,d_3,d_4))
+              D_i = diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
+              # D_i = diag(c(d_1,d_2,d_3,d_4))
             }
 
             val = f_i %*% P %*% D_i
@@ -210,7 +167,8 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
   chain = matrix( 0, steps, n_par)
 
   group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit,
-                 par_index$mu, par_index$sigma))
+                 par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
+                 par_index$l_beta))
   n_group = length(group)
 
   pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
@@ -350,6 +308,48 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
 
 #     # Vectorizing the matrix multiplication row-wise
 #     dP = c(t(pmat %*% qmat))
+
+#     return(list(dP))
+
+# }
+
+# model_t <- function(t,p,parms) {
+
+#     betaMat = matrix(parms$b, ncol = 2, byrow = F) # determine the covariates
+  
+#     q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from LIMBO to IS
+#     q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from LIMBO to NREM
+#     q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to LIMBO
+#     q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from IS    to NREM
+#     q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from IS    to REM
+#     q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
+#     q7  = exp( c(1,t) %*% betaMat[7,] )  # Transition from NREM  to IS
+#     q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from NREM  to REM
+#     q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
+#     q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to IS
+#     q11 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to NREM
+
+#     dP = rep(1, 16)
+
+#     dP[1] = (-q1 - q2)*p[1] + q3*p[2] + q6*p[3] + q9*p[4]
+#     dP[2] = q1*p[1] + (-q3-q4-q5)*p[2] + q7*p[3] + q10*p[4]
+#     dP[3] = q2*p[1] + q4*p[2] + (-q6-q7-q8)*p[3] + q11*p[4]
+#     dP[4] = 0 + q5*p[2] + q8*p[3] + (-q9-q10-q11)*p[4]
+
+#     dP[5] = (-q1 - q2)*p[5] + q3*p[6] + q6*p[7] + q9*p[8]
+#     dP[6] = q1*p[5] + (-q3-q4-q5)*p[6] + q7*p[7] + q10*p[8]
+#     dP[7] = q2*p[5] + q4*p[6] + (-q6-q7-q8)*p[7] + q11*p[8]
+#     dP[8] = 0 + q5*p[6] + q8*p[7] + (-q9-q10-q11)*p[8]
+
+#     dP[9] = (-q1 - q2)*p[9] + q3*p[10] + q6*p[11] + q9*p[12]
+#     dP[10] = q1*p[9] + (-q3-q4-q5)*p[10] + q7*p[11] + q10*p[12]
+#     dP[11] = q2*p[9] + q4*p[10] + (-q6-q7-q8)*p[11] + q11*p[12]
+#     dP[12] = 0 + q5*p[10] + q8*p[11] + (-q9-q10-q11)*p[12]
+
+#     dP[13] = (-q1 - q2)*p[13] + q3*p[14] + q6*p[15] + q9*p[16]
+#     dP[14] = q1*p[13] + (-q3-q4-q5)*p[14] + q7*p[15] + q10*p[16]
+#     dP[15] = q2*p[13] + q4*p[14] + (-q6-q7-q8)*p[15] + q11*p[16]
+#     dP[16] = 0 + q5*p[14] + q8*p[15] + (-q9-q10-q11)*p[16]
 
 #     return(list(dP))
 

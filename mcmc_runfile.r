@@ -1,45 +1,47 @@
 source("mcmc_routine.r")
 
 # ind = as.numeric(Sys.getenv('LSB_JOBINDEX'))
-ind = 10
+ind = 1
 
 set.seed(ind)
 
 # ONLY COVARIATE IS TIME
-init_par = pars = c(c(matrix(c(-2.26568339,  0.08766060,
-                               -1.22022878, -4.44888558,
-                               -1.56180104, -0.08262607,
-                               -2.20978996,  0.05404948,
-                               -2.41222255,  0.10833734,
-                               -2.26568339,  0.08766060,
-                               -1.22022878, -4.44888558,
-                               -1.56180104, -0.08262607,
-                               -2.20978996,  0.05404948,
-                               -2.41222255,  0.10833734), ncol=2, byrow=T)),
-                               c(-3.444682, -3.850148, -4.543295,
-                                 -3.218876, -1.321756, -3.624341,
-                                 -3.624341, -1.321756, -3.218876,
-                                 -4.543295, -3.850148, -3.444682),
-                               c( -6.52842355, -6.15970066),
-                               c(1, 2, 3, 4),
-                               c(1, 2, 3, 4),
-                               c(1, 2, 3, 4),
-                               c(1, 2, 3, 4))
+init_par = pars = c(c(matrix(c(-1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05,
+                               -1 , 0.05), ncol=2, byrow=T)),
+                               c(-4, -4, -4,
+                                 -4, -4, -4,
+                                 -4, -4, -4,
+                                 -4, -4, -4),
+                               c(0.074049718,  0.075399602), 
+                               c(2.1, 2.2, 2.3, 2.4),
+                               c(2.1, 2.2, 2.3, 2.4),
+                               c(2.1, 2.2, 2.3, 2.4),
+                               c(2.1, 2.2, 2.3, 2.4)) 
 
-par_index = list( beta=1:20, misclass=21:32, pi_logit=33:34, 
-                  l_delta = 35:38, l_theta=39:42, l_alpha=43:46, l_beta=47:50)
+par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
+                  l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
 
 prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
                         prior_sd=rep( 20, length(init_par)))
 
-load("Data_format/mice_format.rda")
+# load("Data_format/mice_format_1.rda")
+load("Data_format/mice_format_center.rda")
 
 temp_data = as.matrix(mice_format); rownames(temp_data) = NULL
 id = temp_data[,"ptnum"]
 y_1 = temp_data[,"state"]
 y_2 = temp_data[,c("delta", "theta", "alpha", "beta"), drop=F]
 t = temp_data[,"t1"]
-steps = 10000
+steps = 20000
 burnin = 5000
 n_cores = 4
 
@@ -56,7 +58,7 @@ save(mcmc_out, file = paste0("Model_out/mcmc_out_", ind, ".rda"))
 #                                0.03, 0.75, 0.20, 0.02,
 #                                0.02, 0.20, 0.75, 0.03,
 #                                0.01, 0.02, 0.03, 0.94), nrow = 4, byrow = T)
-#
+
 # logit_fnc <- function(x) {
 #     logit_temp = matrix(0, nrow = nrow(x), ncol = ncol(x))
 
