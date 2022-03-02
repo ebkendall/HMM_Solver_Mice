@@ -4,8 +4,11 @@ for(p in requiredPackages){
   library(p,character.only = TRUE)
 }
 
-args = commandArgs(TRUE)
-ind_num = as.numeric(args[1])
+# args = commandArgs(TRUE)
+# ind_num = as.numeric(args[1])
+# ind_t = as.numeric(args[2])
+ind_num = 1
+ind_t = 30 # or 5
 
 dir = 'Model_out/'
 
@@ -14,7 +17,7 @@ n_post = 5000
 # Step number at 3ich the adaptive tuning scheme was frozen
 burnin = 5000
 # Total number of steps the mcmc algorithm is computed for
-steps = 20000
+steps = 10000
 # Matrix row indices for the posterior sample to use for GFF computation
 index_post = (steps - burnin - n_post + 1):(steps - burnin)
 
@@ -24,28 +27,73 @@ par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36,
 index_seeds = 1:ind_num
 
 
-true_par = c(c(matrix(c(-1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05,
-                        -1 , 0.05), ncol=2, byrow=T)),
-                        c(-4, -4, -4,
-                          -4, -4, -4,
-                          -4, -4, -4,
-                          -4, -4, -4),
-                        c(0.074049718,  0.075399602), 
-                        c(2.1, 2.2, 2.3, 2.4),
-                        c(2.1, 2.2, 2.3, 2.4),
-                        c(2.1, 2.2, 2.3, 2.4),
-                        c(2.1, 2.2, 2.3, 2.4))
+# Initial parameters for the 5-s epochs
+# true_par = c(c(matrix(c(2.071653   , 2.85576,
+#                         1.212561   , -3.418799,
+#                         -4.198075  , 0.5761976,
+#                         -1.882976  , 4.516193,
+#                         -0.01241128, -2.303688,
+#                         -0.6022949 , 3.432778,
+#                         -0.9710429 , -2.282282,
+#                         1.126578   , 4.04868,
+#                         -0.6175124 , 0.6705703,
+#                         3.312069   , 0.6658912,
+#                         -2.792293  , 0.1919586), ncol=2, byrow=T)),
+#                         c(-9.266642, 0.9177677, -4.659014,
+#                           -4.381079, 2.809255, -2.815062,
+#                           -1.498909, -2.702002, -2.519476,
+#                           -5.202432, -2.634818, -1.023371),
+#                         c(-2.573828,  1.353468), 
+#                         c(2.406984, 7.39707, 0.006235556, 0.9011201),
+#                         c(2.526422, 2.422841, 1.793587, 0.3687743),
+#                         c(-1.534735, 0.01483018, 1.649471, 5.28734),
+#                         c(3.082263, 2.136501, 1.184794, -0.081426944))
 
-labels <- rep('.', length(true_par))
+# Initial parameters for the 30-s epochs
+true_par = c(c(matrix(c(4.101165   , 2.936901,
+                        2.592022   , 0.4181154,
+                        -3.341068  , -1.838769,
+                        -2.744266  , 6.732399,
+                        1.360784   , -2.182402,
+                        -0.4102578 , 1.793358,
+                        -2.385557  , 1.524106,
+                        1.001188   , 4.97785,
+                        -4.059381  , -1.370959,
+                        -0.4864039 , 3.183361,
+                        -2.636722  , 1.41935), ncol=2, byrow=T)),
+                        c(-7.736442, 4.381084, -2.01876,
+                          -1.401513, 2.879382, -4.285909,
+                          -1.589179, -0.1894496, -4.367929,
+                          -7.096464, -4.536896, -2.845439),
+                        c(-1.049866, 1.229301), 
+                        c(3.737221, 5.801327, -0.6352715, -2.009164),
+                        c(3.5487, 3.786715, 2.98324, 2.350825),
+                        c(-3.159109, 2.168725, 4.431401, 4.442483),
+                        c(3.644593, 3.197575, 2.481969, 1.792291))
+
+labels <- c("Baseline: LIMBO --> IS",  "Baseline: LIMBO --> NREM",
+            "Baseline: IS --> LIMBO",  "Baseline: IS --> NREM",
+            "Baseline: IS --> REM",    "Baseline: NREM --> LIMBO",
+            "Baseline: NREM --> IS",   "Baseline: NREM --> REM",
+            "Baseline: REM --> LIMBO", "Baseline: REM --> IS",
+            "Baseline: REM --> NREM", 
+            "Time: LIMBO --> IS",  "Time: LIMBO --> NREM",
+            "Time: IS --> LIMBO",  "Time: IS --> NREM",
+            "Time: IS --> REM",    "Time: NREM --> LIMBO",
+            "Time: NREM --> IS",   "Time: NREM --> REM",
+            "Time: REM --> LIMBO", "Time: REM --> IS",
+            "Time: REM --> NREM",
+            "P( obs. LIMBO | true IS )", "P( obs. LIMBO | true NREM )",
+            "P( obs. LIMBO | true REM )", "P( obs. IS | true LIMBO )", 
+            "P( obs. IS | true NREM )", "P( obs. IS | true REM )",
+            "P( obs. NREM | true LIMBO )", "P( obs. NREM | true IS )",
+            "P( obs. NREM | true REM )", "P( obs. REM | true LIMBO )",
+            "P( obs. REM | true IS )", "P( obs. REM | true NREM )",
+            "P( init IS )", "P( init NREM )", 
+            "Delta (LIMBO)", "Theta (LIMBO)", "Alpha (LIMBO)", "Beta (LIMBO)",
+            "Delta (IS)", "Theta (IS)", "Alpha (IS)", "Beta (IS)",
+            "Delta (NREM)", "Theta (NREM)", "Alpha (NREM)", "Beta (NREM)",
+            "Delta (REM)", "Theta (REM)", "Alpha (REM)", "Beta (REM)")
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -58,7 +106,7 @@ for(i in 1:length(cred_set)) { cred_set[[i]] = data.frame('lower' = c(-1), 'uppe
 ind = 0
 
 for (i in index_seeds) {
-    file_name = paste0(dir,'mcmc_out_',toString(i),'.rda')
+    file_name = paste0(dir,'mcmc_out_',toString(i),'_10_', ind_t,'.rda')
 
     if(file.exists(file_name)) {
         load(file_name)
@@ -98,7 +146,7 @@ post_means = matrix(nrow = ind, ncol = length(labels))
 ind = 0
 
 for(seed in index_seeds){
-    file_name = paste0(dir,'mcmc_out_',toString(seed),'.rda')
+    file_name = paste0(dir,'mcmc_out_',toString(seed),'_10_', ind_t, '.rda')
     if (file.exists(file_name)) {
         load(file_name)
         ind = ind + 1
@@ -109,12 +157,14 @@ for(seed in index_seeds){
     }
 }
 
+print(post_means)
+
 # Plot and save the mcmc trace plots and histograms.
-pdf(paste0('mcmc_', ind_num, '.pdf'))
+pdf(paste0('Plots/mcmc_', ind_num, '_10_', ind_t, '.pdf'))
 par(mfrow=c(4, 2))
 
 stacked_chains = do.call( rbind, chain_list)
-par_mean = par_median = upper = lower = rep( NA, ncol(stacked_chains))
+par_mean = par_median = upper = lower = rep( NA, length(labels))
 VP <- vector(mode="list", length = length(labels))
 
 for(r in 1:length(labels)){
