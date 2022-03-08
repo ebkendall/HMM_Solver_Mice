@@ -7,8 +7,8 @@ for(p in requiredPackages){
 # args = commandArgs(TRUE)
 # ind_num = as.numeric(args[1])
 # ind_t = as.numeric(args[2])
-ind_num = 1
-ind_t = 30 # or 5
+ind_num = 10
+ind_t = 5 # or 5
 
 dir = 'Model_out/'
 
@@ -17,7 +17,7 @@ n_post = 5000
 # Step number at 3ich the adaptive tuning scheme was frozen
 burnin = 5000
 # Total number of steps the mcmc algorithm is computed for
-steps = 10000
+steps = 100000
 # Matrix row indices for the posterior sample to use for GFF computation
 index_post = (steps - burnin - n_post + 1):(steps - burnin)
 
@@ -106,7 +106,7 @@ for(i in 1:length(cred_set)) { cred_set[[i]] = data.frame('lower' = c(-1), 'uppe
 ind = 0
 
 for (i in index_seeds) {
-    file_name = paste0(dir,'mcmc_out_',toString(i),'_10_', ind_t,'.rda')
+    file_name = paste0(dir,'mcmc_out_',toString(i),'_', steps/1000, '_', ind_t,'.rda')
 
     if(file.exists(file_name)) {
         load(file_name)
@@ -146,7 +146,7 @@ post_means = matrix(nrow = ind, ncol = length(labels))
 ind = 0
 
 for(seed in index_seeds){
-    file_name = paste0(dir,'mcmc_out_',toString(seed),'_10_', ind_t, '.rda')
+    file_name = paste0(dir,'mcmc_out_',toString(seed),'_', steps/1000, '_', ind_t, '.rda')
     if (file.exists(file_name)) {
         load(file_name)
         ind = ind + 1
@@ -160,7 +160,7 @@ for(seed in index_seeds){
 print(post_means)
 
 # Plot and save the mcmc trace plots and histograms.
-pdf(paste0('Plots/mcmc_', ind_num, '_10_', ind_t, '.pdf'))
+pdf(paste0('Plots/mcmc_total', '_', steps/1000, '_', ind_t, '.pdf'))
 par(mfrow=c(4, 2))
 
 stacked_chains = do.call( rbind, chain_list)
@@ -183,7 +183,7 @@ for(r in 1:length(labels)){
             freq=F, xlab=paste0('Mean = ',toString(par_mean[r]),
                                 ' Median = ',toString(par_median[r])))
     abline( v=upper[r], col='red', lwd=2, lty=2)
-    abline( v=true_par[r], col='green', lwd=2, lty=2)
+    # abline( v=true_par[r], col='green', lwd=2, lty=2)
     abline( v=lower[r], col='purple', lwd=2, lty=2)
 
 }

@@ -1,5 +1,3 @@
-# args = commandArgs(TRUE)
-
 fft_fnc <- function(test) {
   
   # Hann weighting window
@@ -14,7 +12,7 @@ fft_fnc <- function(test) {
   
   omega_color = rep(5, length(omega))
   
-  omega_color[which(omega >= 0.8 & omega <= 4 )] = 1
+  omega_color[which(omega >= 0.8   & omega <= 4)] = 1
   omega_color[which(omega >= 4.2   & omega <= 8)] = 2
   omega_color[which(omega >= 8.2   & omega <= 13)] = 3
   omega_color[which(omega >= 13.2  & omega <= 20)] = 4
@@ -32,21 +30,21 @@ fft_fnc <- function(test) {
   s_power_alpha = sum(abs(fft_alpha)^2) 
   s_power_beta  = sum(abs(fft_beta)^2)  
   
-  return(c(s_power_delta, s_power_theta, s_power_alpha, s_power_beta))
+  # return(c(s_power_delta, s_power_theta, s_power_alpha, s_power_beta))
 
-  # s_power_delta = sum(abs(fft_delta)^2) / (2 * pi * length(fft_delta))
-  # s_power_theta = sum(abs(fft_theta)^2) / (2 * pi * length(fft_theta))
-  # s_power_alpha = sum(abs(fft_alpha)^2) / (2 * pi * length(fft_alpha))
-  # s_power_beta  = sum(abs(fft_beta)^2)  / (2 * pi * length(fft_beta))
+  s_power_delta = sum(abs(fft_delta)^2) / (2 * pi * length(fft_delta))
+  s_power_theta = sum(abs(fft_theta)^2) / (2 * pi * length(fft_theta))
+  s_power_alpha = sum(abs(fft_alpha)^2) / (2 * pi * length(fft_alpha))
+  s_power_beta  = sum(abs(fft_beta)^2)  / (2 * pi * length(fft_beta))
   
-  # s_power_total = s_power_delta + s_power_theta + s_power_alpha + s_power_beta
+  s_power_total = s_power_delta + s_power_theta + s_power_alpha + s_power_beta
   
-  # s_pow_delta_norm = s_power_delta / s_power_total; s_pow_delta_norm
-  # s_pow_theta_norm = s_power_theta / s_power_total; s_pow_theta_norm
-  # s_pow_alpha_norm = s_power_alpha / s_power_total; s_pow_alpha_norm
-  # s_pow_beta_norm = s_power_beta / s_power_total; s_pow_beta_norm
+  s_pow_delta_norm = s_power_delta / s_power_total
+  s_pow_theta_norm = s_power_theta / s_power_total
+  s_pow_alpha_norm = s_power_alpha / s_power_total
+  s_pow_beta_norm = s_power_beta / s_power_total
   
-  # return(c(s_pow_delta_norm, s_pow_theta_norm, s_pow_alpha_norm, s_pow_beta_norm))
+  return(c(s_pow_delta_norm, s_pow_theta_norm, s_pow_alpha_norm, s_pow_beta_norm))
 }
 
 fft_fnc_30 <- function(test) {
@@ -77,60 +75,74 @@ fft_fnc_30 <- function(test) {
   return(c(s_pow_delta_norm, s_pow_theta_norm, s_pow_alpha_norm, s_pow_beta_norm))
 }
 
-Dir <- "~/Dropbox/Shared_HMM_ICU/mouse_data/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv"
-
-mice_data = read.csv(Dir)
+mice_format = data.frame("t1"    = NA, 
+                         "t2"    = NA,
+                         "state" = NA,
+                         "delta" = NA,
+                         "theta" = NA,
+                         "alpha" = NA,
+                         "beta"  = NA,
+                         "ptnum" = NA)
 
 state_names <- c("Limbo", "Clean IS", "Clean NREM", "Clean REM", "<undefined>")
 
-# # How do these proportions change over time (every 5 seconds)
-# index_seq = seq(0, nrow(mice_data), 2560)
+for (ll in 1:length(Sys.glob("Data_format/Data_raw/*.csv"))) {
 
-# How do these proportions change over time (every 30 seconds)
-index_seq = seq(0, nrow(mice_data), 15360)
+  Dir <- Sys.glob("Data_format/Data_raw/*.csv")[ll]
 
-mice_format = data.frame("t1" = rep(NA, length(index_seq) - 1), 
-                         "t2" = rep(NA, length(index_seq) - 1),
-                         "state" = rep(NA, length(index_seq) - 1),
-                         "delta" = rep(NA, length(index_seq) - 1),
-                         "theta" = rep(NA, length(index_seq) - 1),
-                         "alpha" = rep(NA, length(index_seq) - 1),
-                         "beta" = rep(NA, length(index_seq) - 1))
+  mice_data = read.csv(Dir)
 
-for(i in 1:(length(index_seq) - 1)) {
-  
-  s_ind = index_seq[i] + 1
-  e_ind = index_seq[i+1]
-  test = mice_data[s_ind:e_ind, ] # grabs data every 30 seconds
-  
-  wave_prop = fft_fnc_30(test)
-  # wave_prop = fft_fnc(test)
-  
-  t1 = head(test$t,1)
-  t2 = tail(test$t,1)
-  
-  s = ""
-  
-  for(jj in 1:length(unique(test$state))) {
-    temp_s = unique(test$state)[jj]
-    state_num = which(state_names == temp_s)
+  temp_df = data.frame("t1" = NA, "t2" = NA, "state" = NA, "delta" = NA,
+                        "theta" = NA, "alpha" = NA, "beta" = NA)
+
+  # How do these proportions change over time (every 5 seconds)
+  index_seq = seq(0, nrow(mice_data), 2560)
+
+  # # How do these proportions change over time (every 30 seconds)
+  # index_seq = seq(0, nrow(mice_data), 15360)
+
+  for(i in 1:(length(index_seq) - 1)) {
     
-    if(state_num == 5) {state_num = 99}
-    s = paste0(s, state_num)
+    s_ind = index_seq[i] + 1
+    e_ind = index_seq[i+1]
+    test = mice_data[s_ind:e_ind, ] # grabs data every 30 seconds
+    
+    # wave_prop = fft_fnc_30(test)
+    wave_prop = fft_fnc(test)
+    
+    t1 = head(test$t,1)
+    t2 = tail(test$t,1)
+    
+    s = ""
+    
+    for(jj in 1:length(unique(test$state))) {
+      temp_s = unique(test$state)[jj]
+      state_num = which(state_names == temp_s)
+      
+      if(state_num == 5) {state_num = 99}
+      s = paste0(s, state_num)
+    }
+    
+    temp_df[i,] = c(as.numeric(t1), as.numeric(t2), 
+                     as.numeric(s), as.numeric(wave_prop))
   }
-  
-  print(paste0(i, "  ", s))
-  mice_format[i,] = c(as.numeric(t1), as.numeric(t2), 
-                      as.numeric(s), as.numeric(wave_prop))
+
+  temp_df$ptnum = rep(ll, nrow(temp_df))
+  temp_df$state[which(temp_df$state > 4)] = 99
+
+  # Center and scale the time coefficient
+  temp_df$t1 = temp_df$t1 - mean(temp_df$t1)
+  temp_df$t1 = temp_df$t1 / sd(temp_df$t1)
+
+  mice_format = rbind(mice_format, temp_df)
+
+  print(ll)
+  print(head(temp_df, 1))
+  print(unique(temp_df$state))
 }
 
-mice_format$ptnum = rep(1, nrow(mice_format))
-mice_format$state[which(mice_format$state > 4)] = 99
+mice_format = mice_format[-1, ] # First index is place holder
+rownames(mice_format) = NULL
 
-# # Center and scale the time coefficient
-mice_format$t1 = mice_format$t1 - mean(mice_format$t1)
-mice_format$t1 = mice_format$t1 / sd(mice_format$t1)
-
-print(unique(mice_format$state))
-save(mice_format, file = "Data_format/mice_format.rda")
+save(mice_format, file = "Data_format/mice_format_total.rda")
 
