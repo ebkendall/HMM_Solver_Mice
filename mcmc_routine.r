@@ -166,8 +166,8 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
   n_par = length(pars)
   chain = matrix( 0, steps, n_par)
 
-  group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit,
-                 par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
+  group = list(par_index$beta, par_index$misclass, par_index$pi_logit,
+                 c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
                  par_index$l_beta))
   n_group = length(group)
 

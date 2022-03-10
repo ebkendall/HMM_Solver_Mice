@@ -1,7 +1,7 @@
 source("mcmc_routine.r")
 
-ind = as.numeric(Sys.getenv('LSB_JOBINDEX'))
-
+#ind = as.numeric(Sys.getenv('LSB_JOBINDEX'))
+ind=10
 set.seed(ind)
 
 # ONLY COVARIATE IS TIME (seed 6 looked like it was running the most)
@@ -21,10 +21,10 @@ init_par = pars = c(c(matrix(c(-3.5795145 , 1.8837027,
                                  -3.264101, -4.335017, -3.851207,
                                  -0.8467074, -4.250335, -0.4214324),
                                c(-0.52303533, -0.72652087), 
-                               c(2.2769491, 2.0712638, 1.168878, 0.3365937),
-                               c(2.583549, -0.7339889, 2.272208, 1.9650217),
-                               c(0.8008963, 1.2096361, 2.439990, 4.0716853),
-                               c(2.793606, 2.807991, 2.8878495, 3.5707344)) 
+                               c(0, 0, 0, 0),
+                               c(0, 0, 0, 0),
+                               c(0, 0, 0, 0),
+                               c(0, 0, 0, 0)) 
 
 par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
@@ -39,9 +39,9 @@ id = temp_data[,"ptnum"]
 y_1 = temp_data[,"state"]
 y_2 = temp_data[,c("delta", "theta", "alpha", "beta"), drop=F]
 t = temp_data[,"t1"]
-steps = 150000
+steps = 50000
 burnin = 5000
-n_cores = 9
+n_cores = 16
 
 s_time = Sys.time()
 
