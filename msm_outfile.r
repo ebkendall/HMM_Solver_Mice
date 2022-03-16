@@ -4,7 +4,7 @@ for(p in requiredPackages){
   library(p,character.only = TRUE)
 }
 
-nFrames = 1
+nFrames = 50
 
 labels <- c("Baseline: LIMBO --> IS",  "Baseline: LIMBO --> NREM",
             "Baseline: IS --> LIMBO",  "Baseline: IS --> NREM",
@@ -30,30 +30,36 @@ mice_data = matrix(data=-1, nrow = nFrames, ncol = length(labels))
 
 for (i in 1:nFrames) {
 
-  load(paste0("Model_out/Output_msm", i, ".rda"))
+  load(paste0("Model_out/msm/Output_msm", i, ".rda"))
   mice_data[i,] = Output_msm$opt$par
 
 }
 
 meanValues <- colMeans(mice_data)
+print(meanValues)
+
+# pdf("Plots/msm.pdf", onefile = T)
+# VP <- vector(mode="list", length = length(labels))
+# for(i in 1:length(labels)) {
+#     plot_df = data.frame(yVar = mice_data[,i])
+#     VP[[i]] = ggplot(plot_df, aes(x="", y = yVar)) +
+#       geom_violin(trim=FALSE) +
+#       # geom_boxplot(width=0.1) +
+#       ggtitle(labels[i]) +
+#       ylab(paste0("Parameter Mean: ", meanValues[i])) +
+#       xlab('') +
+#       geom_hline(yintercept=meanValues[i], linetype="dashed", color = "red") +
+#       theme(text = element_text(size = 7))
+
+# }
+# grid.arrange(VP[[1]], VP[[2]], VP[[3]], VP[[4]], VP[[5]],
+#              VP[[6]], VP[[7]], VP[[8]], VP[[9]], ncol=3, nrow =3)
+# grid.arrange(VP[[10]], VP[[11]], VP[[12]], VP[[13]],
+#              VP[[14]], VP[[15]], VP[[16]], VP[[17]], VP[[18]], ncol=3, nrow =3)
+# grid.arrange(VP[[19]], VP[[20]], VP[[21]], VP[[22]],
+#              VP[[23]], VP[[24]], VP[[25]], VP[[26]], VP[[27]], ncol=3, nrow =3)
+# grid.arrange(VP[[27]], VP[[28]], VP[[29]], VP[[30]],
+#              VP[[31]], VP[[32]], VP[[33]], VP[[34]], VP[[35]], ncol=3, nrow =3)
 
 
-pdf("Plots/msm.pdf", onefile = T)
-VP <- vector(mode="list", length = length(labels))
-for(i in 1:length(labels)) {
-    plot_df = data.frame(yVar = mice_data[,i])
-    VP[[i]] = ggplot(plot_df, aes(x="", y = yVar)) +
-      geom_violin(trim=FALSE) +
-      geom_boxplot(width=0.1) +
-      ggtitle(labels[i]) +
-      ylab(paste0("Parameter Mean: ", meanValues[i])) +
-      xlab('') +
-      geom_hline(yintercept=meanValues[i], linetype="dashed", color = "red") +
-      theme(text = element_text(size = 7))
-
-}
-grid.arrange(VP[[1]], VP[[2]], VP[[3]], VP[[4]], VP[[5]],
-             VP[[6]], VP[[7]], VP[[8]], VP[[9]], ncol=3, nrow =3)
-grid.arrange(VP[[10]], VP[[11]], VP[[12]], VP[[13]],
-             VP[[14]], VP[[15]], VP[[16]], ncol=3, nrow =3)
 dev.off()

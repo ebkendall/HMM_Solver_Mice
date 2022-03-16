@@ -1,7 +1,6 @@
 library(gtools)
 
-# w = as.numeric(Sys.getenv('LSB_JOBINDEX'))
-w=2
+w = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 print(w)
 set.seed(w)
 
@@ -166,7 +165,7 @@ for(i in 1:N){
   for (ii in 1:(length(timeCentScale) - 1)){ # need to account for no absorbing states
     
     time1 = timeCentScale[ii]
-    print(time1)
+    
     # Infinitesimal transition rates.
     qmat <- Q(time1,beta)
     
@@ -263,7 +262,7 @@ miceData = rawData
 
 rownames(miceData) <- NULL
 
-save(miceData, file=paste("Data_simulation/miceData", w, ".rda", sep=''))
+save(miceData, file=paste("Data_simulation/miceData_new_", w, ".rda", sep=''))
 
 # Transition frequencies for the simulated data set.
 # nTrans_sim <- rep(0,6)

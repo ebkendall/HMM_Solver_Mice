@@ -8,7 +8,7 @@ for(p in requiredPackages){
 # ind_num = as.numeric(args[1])
 # ind_t = as.numeric(args[2])
 ind_num = 10
-ind_t = 5 # or 5
+ind_t = 5 
 
 dir = 'Model_out/'
 
@@ -17,7 +17,7 @@ n_post = 5000
 # Step number at 3ich the adaptive tuning scheme was frozen
 burnin = 5000
 # Total number of steps the mcmc algorithm is computed for
-steps = 100000
+steps = 10000
 # Matrix row indices for the posterior sample to use for GFF computation
 index_post = (steps - burnin - n_post + 1):(steps - burnin)
 
