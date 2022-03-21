@@ -32,11 +32,13 @@ for (i in 1:nFrames) {
 
   load(paste0("Model_out/msm/Output_msm", i, ".rda"))
   mice_data[i,] = Output_msm$opt$par
+  print(Output_msm$opt$par)
 
 }
 
 meanValues <- colMeans(mice_data)
 print(meanValues)
+save(mice_data, file = "Model_out/msm/mle.rda")
 
 # pdf("Plots/msm.pdf", onefile = T)
 # VP <- vector(mode="list", length = length(labels))
@@ -62,4 +64,4 @@ print(meanValues)
 #              VP[[31]], VP[[32]], VP[[33]], VP[[34]], VP[[35]], ncol=3, nrow =3)
 
 
-dev.off()
+# dev.off()

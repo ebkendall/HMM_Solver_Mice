@@ -86,9 +86,17 @@ mice_format = data.frame("t1"    = NA,
 
 state_names <- c("Limbo", "Clean IS", "Clean NREM", "Clean REM", "<undefined>")
 
-for (ll in 1:length(Sys.glob("Data_format/Data_raw/*.csv"))) {
+mouse_names <- c("Data_format/Data_raw/WT 06 20201008 11 Penetrating Arteriole 047 ECoG, EMG and sleep.csv",
+                 "Data_format/Data_raw/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv",
+                 "Data_format/Data_raw/WT 09 20210308 03 Penetrating Arteriole 073 ECoG, EMG and sleep.csv",
+                 "Data_format/Data_raw/WT 10 20210422 10 Penetrating Arteriole 109 ECoG, EMG and sleep.csv")
 
-  Dir <- Sys.glob("Data_format/Data_raw/*.csv")[ll]
+for (ll in 1:length(mouse_names)) {
+  
+  # ll = 1
+  # Dir <- Sys.glob("Data_format/Data_raw/*.csv")[ll]
+  # Dir <- "Data_format/Data_raw/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv"
+  Dir <- mouse_names[ll]
 
   mice_data = read.csv(Dir)
 
@@ -105,9 +113,8 @@ for (ll in 1:length(Sys.glob("Data_format/Data_raw/*.csv"))) {
     
     s_ind = index_seq[i] + 1
     e_ind = index_seq[i+1]
-    test = mice_data[s_ind:e_ind, ] # grabs data every 30 seconds
+    test = mice_data[s_ind:e_ind, ] 
     
-    # wave_prop = fft_fnc_30(test)
     wave_prop = fft_fnc(test)
     
     t1 = head(test$t,1)
@@ -144,5 +151,5 @@ for (ll in 1:length(Sys.glob("Data_format/Data_raw/*.csv"))) {
 mice_format = mice_format[-1, ] # First index is place holder
 rownames(mice_format) = NULL
 
-save(mice_format, file = "Data_format/mice_format_total.rda")
+save(mice_format, file = "Data_format/mice_format_fourMice.rda")
 

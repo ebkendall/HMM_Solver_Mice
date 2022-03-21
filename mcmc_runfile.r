@@ -1,32 +1,27 @@
 source("mcmc_routine.r")
 
 # ind = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
-ind=10
+ind = 5
 set.seed(ind)
+trialNum = 1
 
 # ONLY COVARIATE IS TIME (seed 6 looked like it was running the most)
-init_par = c(1.85061099,   1.27008193,  -9.13595201,   1.60538168,  -0.14610977,
-       -8.96542692,   1.77124043, -11.27758079,  -9.96261824, -87.77478076,
-        0.59369285,  -4.37142690,  -1.93922920,  -0.19847169,  -0.14707156,
-        0.12525060,  -0.34632909,  -0.23345521,  -0.28437221,  -3.83891689,
-        6.54804750,  -0.08665573,  -2.86256107,  -2.91963863,  -2.98420832,
-      -12.77693040, -25.37430065, -12.74349187, -12.88851272, -23.16303582,
-      -12.85471183, -12.43304076, -12.44444766, -12.46997750,  -0.52300000,
-       -0.72650000,
-     c(0, 0, 0, 0),
-     c(0, 0, 0, 0),
-     c(0, 0, 0, 0),
-     c(0, 0, 0, 0))
+init_par = c(10.7546,   0.5908,  10.3479,  -3.1937,  -3.4115,   1.8609,   5.5669,  -9.9735,
+           -9.4079, -79.8430,  -6.1392,   4.5375,  -3.5097,   4.4836,   2.2844,  -0.4092,
+           -7.0872,  -1.4680,  -1.8114,   8.2248,   5.6371,   3.1865,  10.7522,   1.0814,
+           -6.6501, -21.0068, -18.9590, -14.3941, -18.0109, -26.0016, -21.3028, -24.4576,
+          -10.1085, -18.5643,   1.1161,  -5.8191,   3.3676,   2.5901,   1.6991,   0.7753,
+            2.5628,   2.7438,   1.7583,   0.8327,   1.8636,  -1.3147,  -0.8495,  -2.1251,
+           -1.7250,   2.1832,  -2.9005,  -5.8171)
 
-
-
+ 
 par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
 
 prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
                         prior_sd=rep( 20, length(init_par)))
 
-load("Data_format/mice_format_total.rda")
+load("Data_format/mice_format_fourMice.rda")
 
 temp_data = as.matrix(mice_format); rownames(temp_data) = NULL
 id = temp_data[,"ptnum"]
@@ -45,7 +40,7 @@ mcmc_out = mcmc_routine(y_1, y_2, t, id, init_par, prior_par, par_index,
 e_time = Sys.time() - s_time; print(e_time)
 
 save(mcmc_out, file = 
-              paste0("Model_out/mcmc_out_", ind, "_", steps / 1000, "_5.rda"))
+              paste0("Model_out/mcmc_out_", ind, "_", trialNum, ".rda"))
 
 
 # logit_fnc <- function(x) {

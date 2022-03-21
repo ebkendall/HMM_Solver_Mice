@@ -5,10 +5,6 @@ for(p in requiredPackages){
 }
 
 # args = commandArgs(TRUE)
-# ind_num = as.numeric(args[1])
-# ind_t = as.numeric(args[2])
-ind_num = 10
-ind_t = 5 
 
 dir = 'Model_out/'
 
@@ -24,30 +20,8 @@ index_post = (steps - burnin - n_post + 1):(steps - burnin)
 par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
 
-index_seeds = 1:ind_num
-
-
-# Initial parameters for the 5-s epochs
-# true_par = c(c(matrix(c(2.071653   , 2.85576,
-#                         1.212561   , -3.418799,
-#                         -4.198075  , 0.5761976,
-#                         -1.882976  , 4.516193,
-#                         -0.01241128, -2.303688,
-#                         -0.6022949 , 3.432778,
-#                         -0.9710429 , -2.282282,
-#                         1.126578   , 4.04868,
-#                         -0.6175124 , 0.6705703,
-#                         3.312069   , 0.6658912,
-#                         -2.792293  , 0.1919586), ncol=2, byrow=T)),
-#                         c(-9.266642, 0.9177677, -4.659014,
-#                           -4.381079, 2.809255, -2.815062,
-#                           -1.498909, -2.702002, -2.519476,
-#                           -5.202432, -2.634818, -1.023371),
-#                         c(-2.573828,  1.353468), 
-#                         c(2.406984, 7.39707, 0.006235556, 0.9011201),
-#                         c(2.526422, 2.422841, 1.793587, 0.3687743),
-#                         c(-1.534735, 0.01483018, 1.649471, 5.28734),
-#                         c(3.082263, 2.136501, 1.184794, -0.081426944))
+index_seeds = 5
+trialNum = 2 # Change this everytime!!!! ****************
 
 # Initial parameters for the 30-s epochs
 true_par = c(c(matrix(c(4.101165   , 2.936901,
@@ -106,8 +80,7 @@ for(i in 1:length(cred_set)) { cred_set[[i]] = data.frame('lower' = c(-1), 'uppe
 ind = 0
 
 for (i in index_seeds) {
-    file_name = paste0(dir,'mcmc_out_',toString(i),'_', steps/1000, '_', ind_t,'.rda')
-
+    file_name = paste0(dir,'mcmc_out_',toString(i),'_', trialNum,'.rda')
     if(file.exists(file_name)) {
         load(file_name)
         ind = ind + 1
@@ -133,7 +106,7 @@ for(i in 1:length(true_par)) {
     bot = nrow(cred_set[[i]])
     covrg = top/bot
     cov_df[i] = covrg
-    print(paste0("Coverage for parameter ", val, " is: ", covrg))
+    # print(paste0("Coverage for parameter ", val, " is: ", covrg))
 }
 
 
@@ -146,21 +119,23 @@ post_means = matrix(nrow = ind, ncol = length(labels))
 ind = 0
 
 for(seed in index_seeds){
-    file_name = paste0(dir,'mcmc_out_',toString(seed),'_', steps/1000, '_', ind_t, '.rda')
+    file_name = paste0(dir,'mcmc_out_',toString(seed),'_', trialNum, '.rda')
     if (file.exists(file_name)) {
         load(file_name)
         ind = ind + 1
+        print(paste0(ind, ": ", file_name))
         print(mcmc_out$accept)
+        print(c(tail(round(mcmc_out$chain, digits = 4), 1)))
 
         chain_list[[ind]] = mcmc_out$chain[index_post,]
         post_means[ind,] <- colMeans(mcmc_out$chain[index_post,])
     }
 }
 
-print(post_means)
+# print(post_means)
 
 # Plot and save the mcmc trace plots and histograms.
-pdf(paste0('Plots/mcmc_total', '_', steps/1000, '_', ind_t, '.pdf'))
+pdf(paste0('Plots/Seed_5_Progression/mcmc_total', '_', trialNum, '.pdf'))
 par(mfrow=c(4, 2))
 
 stacked_chains = do.call( rbind, chain_list)

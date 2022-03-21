@@ -102,14 +102,13 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
         if(y_1_i[1] <= 4) { # observed
           f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[1]])
         } else { # unknown (how to handle; treat as knowing LIMBO)
-          f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
-          # f_i = init %*% diag(c(d_1,d_2,d_3,d_4))
+          # f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
+          f_i = init %*% diag(c(d_1,d_2,d_3,d_4))
         }
 
         log_norm = 0
         
         for(k in 2:length(t_i)) {
-            
             out <- deSolve::ode(p_ic, times = t_i[(k-1):k], 
                                       func = model_t, 
                                       parms = list(b=beta))
@@ -119,6 +118,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
                            out[2,"p9"], out[2,"p10"], out[2,"p11"], out[2,"p12"],
                           out[2,"p13"], out[2,"p14"], out[2,"p15"], out[2,"p16"]),
                         nrow = 4, byrow = T)
+            # print("transition matrix")
             # print(P)
 
             d_1 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[1,])
@@ -129,8 +129,8 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
             if(y_1_i[1] <= 4) { # observed
               D_i = diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[k]])
             } else { # unknown 
-              D_i = diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
-              # D_i = diag(c(d_1,d_2,d_3,d_4))
+              # D_i = diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
+              D_i = diag(c(d_1,d_2,d_3,d_4))
             }
 
             val = f_i %*% P %*% D_i
@@ -166,8 +166,8 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
   n_par = length(pars)
   chain = matrix( 0, steps, n_par)
 
-  group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit),
-                 c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
+  group = list(par_index$beta, par_index$misclass, par_index$pi_logit,
+               c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
                  par_index$l_beta))
   n_group = length(group)
 
@@ -197,8 +197,8 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
       log_post = fn_log_post_continuous(proposal, prior_par, 
                                         par_index, y_1, y_2, 
                                         t, id)
-      # print("Likelihood Evaluation:")
-      # print(log_post)
+      print("Likelihood Evaluation:")
+      print(log_post)
 
       # Only propose valid parameters during the burnin period
       if(ttt < burnin){
