@@ -4,16 +4,14 @@ for(p in requiredPackages){
   library(p,character.only = TRUE)
 }
 
-# args = commandArgs(TRUE)
-
-dir = 'Model_out/'
+dir = 'Model_out/' # Change this everytime!!!! ****************
 
 # Size of posterior sample from mcmc chains
 n_post = 5000
 # Step number at 3ich the adaptive tuning scheme was frozen
 burnin = 5000
 # Total number of steps the mcmc algorithm is computed for
-steps = 10000
+steps = 20000
 # Matrix row indices for the posterior sample to use for GFF computation
 index_post = (steps - burnin - n_post + 1):(steps - burnin)
 
@@ -21,7 +19,7 @@ par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36,
                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
 
 index_seeds = 5
-trialNum = 2 # Change this everytime!!!! ****************
+trialNum = 10 # Change this everytime!!!! ****************
 
 # Initial parameters for the 30-s epochs
 true_par = c(c(matrix(c(4.101165   , 2.936901,
@@ -135,7 +133,7 @@ for(seed in index_seeds){
 # print(post_means)
 
 # Plot and save the mcmc trace plots and histograms.
-pdf(paste0('Plots/Seed_5_Progression/mcmc_total', '_', trialNum, '.pdf'))
+pdf(paste0('Plots/Seed_5_Progression/mcmc_total', '_', trialNum, '.pdf')) # *****
 par(mfrow=c(4, 2))
 
 stacked_chains = do.call( rbind, chain_list)

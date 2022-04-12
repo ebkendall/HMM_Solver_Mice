@@ -1,12 +1,12 @@
 #!/bin/tcsh
 
-#BSUB -J miceModel[1-10]  #job name AND job array
-#BSUB -n 10                  #number of cores
+#BSUB -J jobName[1-10]       #job name AND job array
+#BSUB -n 1                   #number of cores: generally only need 1 to 5
 #BSUB -R span[hosts=1]       #distribute across 1 node
-#BSUB -W 36:00               #walltime limit: hh:mm
-#BSUB -o /share/hmmrs/ebkendal/HMM_Solver_Mice/Model_out/a_out/trial_%I.out
-#BSUB -e /share/hmmrs/ebkendal/HMM_Solver_Mice/Model_out/a_out/error_%I.err  #error - %J is the job-id %I is the job-array index
+#BSUB -W 36:00               #walltime limit: hours:minutes
+#BSUB -o /share/.../trial_%I.out  # filepath for the output
+#BSUB -e /share/.../error_%I.err  # filepath for error
 
 module load R
 
-Rscript mcmc_runfile.r $LSB_JOBINDEX
+Rscript r_file_name.r $LSB_JOBINDEX

@@ -1,14 +1,16 @@
+library(tidyverse)
+
 fft_fnc <- function(test) {
   
   # Hann weighting window
   K = nrow(test)
   k = 1:K
   w_k = 0.5 - 0.5 * cos(2 * pi * k / (K-1))
-  test$ecog = test$ecog * w_k
+  test$eeg = test$eeg * w_k
   # test$emg = test$emg * w_k
-
+  
   # Formatting
-  omega = seq(0, 1/(test$t[2] - test$t[1]), length.out =nrow(test))
+  omega = seq(0, 5000, length.out =nrow(test))
   
   omega_color = rep(5, length(omega))
   
@@ -17,7 +19,7 @@ fft_fnc <- function(test) {
   omega_color[which(omega >= 8.2   & omega <= 13)] = 3
   omega_color[which(omega >= 13.2  & omega <= 20)] = 4
   
-  fft_new = fft(test$ecog)
+  fft_new = fft(test$eeg)
   # fft_new = fft(test$emg)
   
   fft_delta = fft_new[omega_color == 1]
@@ -31,7 +33,7 @@ fft_fnc <- function(test) {
   s_power_beta  = sum(abs(fft_beta)^2)  
   
   # return(c(s_power_delta, s_power_theta, s_power_alpha, s_power_beta))
-
+  
   s_power_delta = sum(abs(fft_delta)^2) / (2 * pi * length(fft_delta))
   s_power_theta = sum(abs(fft_theta)^2) / (2 * pi * length(fft_theta))
   s_power_alpha = sum(abs(fft_alpha)^2) / (2 * pi * length(fft_alpha))
@@ -52,19 +54,19 @@ fft_fnc_30 <- function(test) {
   # test is 30 seconds of data
   pow_30 = matrix(nrow = 6, ncol = 4)
   colnames(pow_30) = c("Delta", "Theta", "Alpha", "Beta")
-
-  seq_30 = seq(0, 15360, 2560)
-
+  
+  seq_30 = seq(0, 150000, 25000)
+  
   for(i in 2:length(seq_30)) {
     start_row = seq_30[i-1] + 1
     end_row = seq_30[i]
     temp_5 = test[start_row:end_row, ]
-
+    
     pow_30[i-1, ] = fft_fnc(temp_5)
   }
   
   power_band = colMeans(pow_30)
-
+  
   s_power_total = sum(power_band)
   
   s_pow_delta_norm = power_band[1] / s_power_total
@@ -75,40 +77,48 @@ fft_fnc_30 <- function(test) {
   return(c(s_pow_delta_norm, s_pow_theta_norm, s_pow_alpha_norm, s_pow_beta_norm))
 }
 
-mice_format = data.frame("t1"    = NA, 
-                         "t2"    = NA,
-                         "state" = NA,
-                         "delta" = NA,
-                         "theta" = NA,
-                         "alpha" = NA,
-                         "beta"  = NA,
-                         "ptnum" = NA)
+mice_format = data.frame("t1"    = NULL, 
+                         "t2"    = NULL,
+                         "state" = NULL,
+                         "delta" = NULL,
+                         "theta" = NULL,
+                         "alpha" = NULL,
+                         "beta"  = NULL,
+                         "ptnum" = NULL)
 
-state_names <- c("Limbo", "Clean IS", "Clean NREM", "Clean REM", "<undefined>")
+state_names <- c("limbo", "is", "nrem", "rem", "")
 
-mouse_names <- c("Data_format/Data_raw/WT 06 20201008 11 Penetrating Arteriole 047 ECoG, EMG and sleep.csv",
-                 "Data_format/Data_raw/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv",
-                 "Data_format/Data_raw/WT 09 20210308 03 Penetrating Arteriole 073 ECoG, EMG and sleep.csv",
-                 "Data_format/Data_raw/WT 10 20210422 10 Penetrating Arteriole 109 ECoG, EMG and sleep.csv")
+pat_num = 1
 
-for (ll in 1:length(mouse_names)) {
+for (ll in 1:length(Sys.glob("Data_format/Big_data_format/*"))) {
   
-  # ll = 1
-  # Dir <- Sys.glob("Data_format/Data_raw/*.csv")[ll]
-  # Dir <- "Data_format/Data_raw/WT 08 20210309 03 Penetrating Arteriole 064 ECoG, EMG and sleep.csv"
-  Dir <- mouse_names[ll]
-
-  mice_data = read.csv(Dir)
-
+  Dir <- Sys.glob("Data_format/Big_data_format/*")[ll]
+  print(ll)
+  print(Dir)
+  
+  if(ll < 8) {
+    mice_data = read.csv(Dir) 
+  } else {
+    load(Dir)
+    mice_data = mice_data_temp
+  }
+  
+  if(length(unique(mice_data$state)) == 1) {
+    if (unique(mice_data$state) == "") {
+      print("No informative state")
+      next
+    }
+  }
+  
   temp_df = data.frame("t1" = NA, "t2" = NA, "state" = NA, "delta" = NA,
-                        "theta" = NA, "alpha" = NA, "beta" = NA)
-
+                       "theta" = NA, "alpha" = NA, "beta" = NA)
+  
   # How do these proportions change over time (every 5 seconds)
-  index_seq = seq(0, nrow(mice_data), 2560)
-
+  index_seq = seq(0, nrow(mice_data), 5000)
+  
   # # How do these proportions change over time (every 30 seconds)
-  # index_seq = seq(0, nrow(mice_data), 15360)
-
+  # index_seq = seq(0, nrow(mice_data), 150000)
+  
   for(i in 1:(length(index_seq) - 1)) {
     
     s_ind = index_seq[i] + 1
@@ -116,9 +126,10 @@ for (ll in 1:length(mouse_names)) {
     test = mice_data[s_ind:e_ind, ] 
     
     wave_prop = fft_fnc(test)
+    # wave_prop = fft_fnc_30(test)
     
-    t1 = head(test$t,1)
-    t2 = tail(test$t,1)
+    t1 = s_ind
+    t2 = e_ind
     
     s = ""
     
@@ -131,25 +142,26 @@ for (ll in 1:length(mouse_names)) {
     }
     
     temp_df[i,] = c(as.numeric(t1), as.numeric(t2), 
-                     as.numeric(s), as.numeric(wave_prop))
+                    as.numeric(s), as.numeric(wave_prop))
   }
-
-  temp_df$ptnum = rep(ll, nrow(temp_df))
+  
+  temp_df$ptnum = rep(pat_num, nrow(temp_df))
   temp_df$state[which(temp_df$state > 4)] = 99
-
+  pat_num = pat_num + 1
+  
   # Center and scale the time coefficient
   temp_df$t1 = temp_df$t1 - mean(temp_df$t1)
   temp_df$t1 = temp_df$t1 / sd(temp_df$t1)
-
+  
   mice_format = rbind(mice_format, temp_df)
-
-  print(ll)
+  
   print(head(temp_df, 1))
-  print(unique(temp_df$state))
+  print(table(temp_df$state))
 }
 
-mice_format = mice_format[-1, ] # First index is place holder
+# mice_format = mice_format[-1, ] # First index is place holder
 rownames(mice_format) = NULL
 
-save(mice_format, file = "Data_format/mice_format_fourMice.rda")
+save(mice_format, file = "Data_format/mice_format_total_new_5sec.rda")
+
 

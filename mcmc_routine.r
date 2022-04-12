@@ -73,6 +73,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
     rownames(lambda_mat) = c("LIMBO", "IS", "NREM", "REM")
 
     lambda_mat = exp(lambda_mat)
+    dir_coeff = lambda_mat / rowSums(lambda_mat)
 
     beta <- pars[par_index$beta]
 
@@ -86,7 +87,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
     log_total_val = foreach(i=unique(id), .combine='+', 
                             .export = c("model_t", "Q"), 
                             .packages = c("deSolve", "gtools")) %dopar% {
-
+        
         f_i = val = 1
 
         y_1_i = y_1[id == i]
@@ -166,7 +167,7 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
   n_par = length(pars)
   chain = matrix( 0, steps, n_par)
 
-  group = list(par_index$beta, par_index$misclass, par_index$pi_logit,
+  group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit),
                c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
                  par_index$l_beta))
   n_group = length(group)
@@ -313,6 +314,7 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
 
 # }
 
+
 # model_t <- function(t,p,parms) {
 
 #     betaMat = matrix(parms$b, ncol = 2, byrow = F) # determine the covariates
@@ -327,7 +329,7 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
 #     q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from NREM  to REM
 #     q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
 #     q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to IS
-#     q11 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to NREM
+#     q11 = exp( c(1,t) %*% betaMat[11,] ) # Transition from REM   to NREM
 
 #     dP = rep(1, 16)
 
