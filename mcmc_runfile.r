@@ -19,7 +19,7 @@ init_par = pars =  c(3.39430821,  10.12405236,  -7.93689935,   4.07974000,   2.0
              0.43535440, 0.30149348, 0.17704457, 0.08610755,
              0.41606167, 0.36792410, 0.15595449, 0.06005974)))
 
-# c(10.71203032,   3.52090244,  11.10473555,   0.36116910,   2.57988950,
+# init_par = pars = c(10.71203032,   3.52090244,  11.10473555,   0.36116910,   2.57988950,
 #  -5.08623890,   4.23518359,  -0.65745901,   3.65054620, -81.04296032,
 #  -9.97705498,   4.47413475,  -0.08061642,   4.37178174,   0.51065118,
 #  -0.16417233,  -5.50421397,   0.02489742,  -0.51344842,  -0.13201315,
@@ -37,10 +37,8 @@ par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36,
 prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
                         prior_sd=rep( 20, length(init_par)))
 
-# load("Data_format/mice_format_total_new_15sec.rda")
-load('Data_format/mice_format_total.rda')
-# mice_format = mice_format[mice_format$ptnum %in% 1:7, ]
-# mice_format = mice_format[mice_format$ptnum == 6, ]
+load("Data_format/mice_format_total_new_15sec.rda")
+# load('Data_format/mice_format_total.rda')
 
 temp_data = as.matrix(mice_format); rownames(temp_data) = NULL
 id = temp_data[,"ptnum"]

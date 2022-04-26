@@ -128,7 +128,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
             d_3 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[3,])
             d_4 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[4,])
 
-            if(y_1_i[1] <= 4) { # observed
+            if(y_1_i[k] <= 4) { # observed
               D_i = diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[k]])
             } else { # unknown 
               # D_i = diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
