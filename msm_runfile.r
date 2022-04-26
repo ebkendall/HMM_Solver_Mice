@@ -4,7 +4,7 @@ library("msm")
 seedInd = 5
 set.seed(seedInd)
 
-load("Data_format/mice_format_total_new.rda")
+load("Data_format/mice_format_total_new_15sec.rda")
 
 obstrue <- rep(0,nrow(mice_format))
 obstrue[which(mice_format$state == 99)] = 1
@@ -32,4 +32,4 @@ Output_msm <- msm(state ~ t1, subject=ptnum, data=mice_format, qmatrix=qmat, cov
                 ematrix=emat, initprobs=c(1, exp(-0.523), exp(-0.7265), 0), est.initprobs=TRUE, deathexact=FALSE, 
                 censor=99, censor.states=1:4, method='BFGS', control=list(fnscale=4000, maxit=10000))   
 
-save(Output_msm,file=paste0('Model_out/msm/Output_msm_total_new',seedInd,'.rda'))
+save(Output_msm,file=paste0('Model_out/msm/Output_msm_total_new',seedInd,'_15sec.rda'))

@@ -88,6 +88,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
                             .export = c("model_t", "Q"), 
                             .packages = c("deSolve", "gtools")) %dopar% {
         
+        # print(i)
         f_i = val = 1
 
         y_1_i = y_1[id == i]
