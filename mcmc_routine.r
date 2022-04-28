@@ -73,7 +73,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
     rownames(lambda_mat) = c("LIMBO", "IS", "NREM", "REM")
 
     lambda_mat = exp(lambda_mat)
-    dir_coeff = lambda_mat / rowSums(lambda_mat)
+    # dir_coeff = lambda_mat / rowSums(lambda_mat)
 
     beta <- pars[par_index$beta]
 
@@ -103,8 +103,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
         
         if(y_1_i[1] <= 4) { # observed
           f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[1]])
-        } else { # unknown (how to handle; treat as knowing LIMBO)
-          # f_i = init %*% diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
+        } else { 
           f_i = init %*% diag(c(d_1,d_2,d_3,d_4))
         }
 
@@ -131,7 +130,6 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
             if(y_1_i[k] <= 4) { # observed
               D_i = diag(c(d_1,d_2,d_3,d_4) * resp_fnc[, y_1_i[k]])
             } else { # unknown 
-              # D_i = diag(c(d_1,d_2,d_3,d_4) * rowSums(resp_fnc[, 1:4]))
               D_i = diag(c(d_1,d_2,d_3,d_4))
             }
 
@@ -271,89 +269,3 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
                pscale=pscale))
 }
 # -----------------------------------------------------------------------------
-
-
-# Q <- function(t,x_ik,beta){
-
-#     betaMat = matrix(beta, ncol = 4, byrow = F) # determine the covariates
-  
-#     q1  = exp( c(1,t,x_ik) %*% betaMat[1,] )  # Transition from LIMBO to IS
-#     q2  = exp( c(1,t,x_ik) %*% betaMat[2,] )  # Transition from LIMBO to NREM
-#     q3  = exp( c(1,t,x_ik) %*% betaMat[3,] )  # Transition from IS    to LIMBO
-#     q4  = exp( c(1,t,x_ik) %*% betaMat[4,] )  # Transition from IS    to NREM
-#     q5  = exp( c(1,t,x_ik) %*% betaMat[5,] )  # Transition from IS    to REM
-#     q6  = exp( c(1,t,x_ik) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
-#     q7  = exp( c(1,t,x_ik) %*% betaMat[7,] )  # Transition from NREM  to IS
-#     q8  = exp( c(1,t,x_ik) %*% betaMat[8,] )  # Transition from NREM  to REM
-#     q9  = exp( c(1,t,x_ik) %*% betaMat[9,] )  # Transition from REM   to IS
-#     q10 = exp( c(1,t,x_ik) %*% betaMat[10,] ) # Transition from REM   to NREM
-    
-#     qmat = matrix(c(  0,  q1,  q2,  0,
-#                      q3,   0,  q4, q5,
-#                      q6,  q7,   0, q8,
-#                       0,  q9, q10,  0),
-#                 nrow = 4, byrow = T)
-#     diag(qmat) = -rowSums(qmat)
-
-#   return(qmat)
-# }
-
-# model_t <- function(t,p,parms) {
-
-#     qmat = Q(t, parms$x_ik, parms$b)
-
-#     pmat = matrix(c(  p[1],  p[2],  p[3],     0,
-#                       p[4],  p[5],  p[6],  p[7],
-#                       p[8],  p[9], p[10], p[11],
-#                          0, p[12], p[13], p[14],),
-#                 nrow = 4, byrow = T)
-
-#     # Vectorizing the matrix multiplication row-wise
-#     dP = c(t(pmat %*% qmat))
-
-#     return(list(dP))
-
-# }
-
-
-# model_t <- function(t,p,parms) {
-
-#     betaMat = matrix(parms$b, ncol = 2, byrow = F) # determine the covariates
-  
-#     q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from LIMBO to IS
-#     q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from LIMBO to NREM
-#     q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to LIMBO
-#     q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from IS    to NREM
-#     q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from IS    to REM
-#     q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
-#     q7  = exp( c(1,t) %*% betaMat[7,] )  # Transition from NREM  to IS
-#     q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from NREM  to REM
-#     q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
-#     q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from REM   to IS
-#     q11 = exp( c(1,t) %*% betaMat[11,] ) # Transition from REM   to NREM
-
-#     dP = rep(1, 16)
-
-#     dP[1] = (-q1 - q2)*p[1] + q3*p[2] + q6*p[3] + q9*p[4]
-#     dP[2] = q1*p[1] + (-q3-q4-q5)*p[2] + q7*p[3] + q10*p[4]
-#     dP[3] = q2*p[1] + q4*p[2] + (-q6-q7-q8)*p[3] + q11*p[4]
-#     dP[4] = 0 + q5*p[2] + q8*p[3] + (-q9-q10-q11)*p[4]
-
-#     dP[5] = (-q1 - q2)*p[5] + q3*p[6] + q6*p[7] + q9*p[8]
-#     dP[6] = q1*p[5] + (-q3-q4-q5)*p[6] + q7*p[7] + q10*p[8]
-#     dP[7] = q2*p[5] + q4*p[6] + (-q6-q7-q8)*p[7] + q11*p[8]
-#     dP[8] = 0 + q5*p[6] + q8*p[7] + (-q9-q10-q11)*p[8]
-
-#     dP[9] = (-q1 - q2)*p[9] + q3*p[10] + q6*p[11] + q9*p[12]
-#     dP[10] = q1*p[9] + (-q3-q4-q5)*p[10] + q7*p[11] + q10*p[12]
-#     dP[11] = q2*p[9] + q4*p[10] + (-q6-q7-q8)*p[11] + q11*p[12]
-#     dP[12] = 0 + q5*p[10] + q8*p[11] + (-q9-q10-q11)*p[12]
-
-#     dP[13] = (-q1 - q2)*p[13] + q3*p[14] + q6*p[15] + q9*p[16]
-#     dP[14] = q1*p[13] + (-q3-q4-q5)*p[14] + q7*p[15] + q10*p[16]
-#     dP[15] = q2*p[13] + q4*p[14] + (-q6-q7-q8)*p[15] + q11*p[16]
-#     dP[16] = 0 + q5*p[14] + q8*p[15] + (-q9-q10-q11)*p[16]
-
-#     return(list(dP))
-
-# }

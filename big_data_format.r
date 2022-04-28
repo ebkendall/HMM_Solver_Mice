@@ -90,3 +90,55 @@ for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample/*.rda"))) {
 }
 
 dev.off()
+
+# -----------------------------------------------------------------------------
+
+# New histograms
+load('Data_format/mice_format_sub_total.rda')
+load('Data_format/mice_format_sub_total_15.rda')
+# Looking into the 5 second distribution
+# temp = mice_format[mice_format$delta < 0.1, ]
+# t_full = as.data.frame(table(mice_format$ptnum))
+# t_sub = as.data.frame(table(temp$ptnum))
+# t_sub$Freq / t_full$Freq
+# which((t_sub$Freq / t_full$Freq) < 0.9) #c(1,3,4,5,6)
+# 
+mice_format = mice_format[!(mice_format$ptnum %in% c(18,19,20,21,22,23)), ]
+# mice_format = mice_format[mice_format$ptnum == 1, ]
+# 
+pdf('Plots/Supplement/mice_format_sub_total_15_filt.pdf')
+par(mfrow = c(2,2))
+hist(mice_format$delta[mice_format$state == 2],
+     main = "Delta, state 2")
+hist(mice_format$delta[mice_format$state == 3],
+     main = "Delta, state 3")
+hist(mice_format$delta[mice_format$state == 4],
+     main = "Delta, state 4")
+hist(mice_format$delta[mice_format$state == 99],
+     main = "Delta, state 99")
+hist(mice_format$theta[mice_format$state == 2],
+     main = "Theta, state 2")
+hist(mice_format$theta[mice_format$state == 3],
+     main = "Theta, state 3")
+hist(mice_format$theta[mice_format$state == 4],
+     main = "Theta, state 4")
+hist(mice_format$theta[mice_format$state == 99],
+     main = "Theta, state 99")
+hist(mice_format$alpha[mice_format$state == 2],
+     main = "alpha, state 2")
+hist(mice_format$alpha[mice_format$state == 3],
+     main = "alpha, state 3")
+hist(mice_format$alpha[mice_format$state == 4],
+     main = "alpha, state 4")
+hist(mice_format$alpha[mice_format$state == 99],
+     main = "alpha, state 99")
+hist(mice_format$beta[mice_format$state == 2],
+     main = "beta, state 2")
+hist(mice_format$beta[mice_format$state == 3],
+     main = "beta, state 3")
+hist(mice_format$beta[mice_format$state == 4],
+     main = "beta, state 4")
+hist(mice_format$beta[mice_format$state == 99],
+     main = "beta, state 99")
+
+dev.off()
