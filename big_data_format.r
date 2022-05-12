@@ -54,6 +54,43 @@ for(ll in c(1,3:12)) {
 
 # -----------------------------------------------------------------------------
 
+# editing the series so that we have more subjects with frequency of 556
+
+for(ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample/*.rda"))) {
+  print(ll)
+  
+  Dir <- Sys.glob("Data_format/Exported_ephys_downsample/*.rda")[ll]
+  
+  load(Dir)
+  
+  # For the ones that had to be broken up
+  small_check = substring(Dir, 39)
+  if(nchar(small_check) > 16) mice_data = mice_data_small
+  
+  mice_data_temp = mice_data
+  
+  length_CONST = 614381
+  
+  if(nrow(mice_data_temp) <= length_CONST) {
+    mice_data = mice_data_temp
+    save(mice_data, file = paste0("Data_format/Exported_ephys_downsample_2/mice_data_",
+                                  ll, "_2.rda"))
+  } else {
+    ind_breakdown = c(seq(1, nrow(mice_data_temp), length_CONST), nrow(mice_data_temp) + 1)
+    
+    for(ii in 2:length(ind_breakdown)) {
+      mice_ind = (ind_breakdown[ii - 1]):(ind_breakdown[ii] - 1)
+      mice_data = mice_data_temp[mice_ind, ]
+      save(mice_data, file = paste0("Data_format/Exported_ephys_downsample_2/mice_data_",
+                                    ll, "_", ii, ".rda"))
+    }
+  }
+}
+
+
+
+# -----------------------------------------------------------------------------
+
 # Checking the issues with the emg and eeg data and see if we can uncover the issue
 pdf('Plots/Supplement/raw_series_both_sub.pdf')
 par(mfrow = c(2,1))
@@ -94,19 +131,21 @@ dev.off()
 # -----------------------------------------------------------------------------
 
 # New histograms
-load('Data_format/mice_format_sub_total.rda')
-load('Data_format/mice_format_sub_total_15.rda')
+load('Data_format/mice_format_sub_total_split.rda')
+# load('Data_format/mice_format_sub_total_15.rda')
 # Looking into the 5 second distribution
-# temp = mice_format[mice_format$delta < 0.1, ]
+temp = mice_format[mice_format$delta < 0.2, ]
+table(temp$ptnum)
+table(mice_format$ptnum)
 # t_full = as.data.frame(table(mice_format$ptnum))
 # t_sub = as.data.frame(table(temp$ptnum))
 # t_sub$Freq / t_full$Freq
 # which((t_sub$Freq / t_full$Freq) < 0.9) #c(1,3,4,5,6)
 # 
-mice_format = mice_format[!(mice_format$ptnum %in% c(18,19,20,21,22,23)), ]
+mice_format = mice_format[!(mice_format$ptnum %in% 34:59), ]
 # mice_format = mice_format[mice_format$ptnum == 1, ]
 # 
-pdf('Plots/Supplement/mice_format_sub_total_15_filt.pdf')
+pdf('Plots/Supplement/mice_format_sub_total_split_filt.pdf')
 par(mfrow = c(2,2))
 hist(mice_format$delta[mice_format$state == 2],
      main = "Delta, state 2")

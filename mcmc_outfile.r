@@ -7,11 +7,11 @@ for(p in requiredPackages){
 dir = 'Model_out/' # Change this everytime!!!! ****************
 
 # Size of posterior sample from mcmc chains
-n_post = 5000
+n_post = 4000
 # Step number at 3ich the adaptive tuning scheme was frozen
-burnin = 5000
+burnin = 1000
 # Total number of steps the mcmc algorithm is computed for
-steps = 20000
+steps = 5000
 # Matrix row indices for the posterior sample to use for GFF computation
 index_post = (steps - burnin - n_post + 1):(steps - burnin)
 
@@ -19,7 +19,7 @@ par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36,
                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
 
 index_seeds = 5
-trialNum = 10 # Change this everytime!!!! ****************
+trialNum = 13 # Change this everytime!!!! ****************
 
 # Initial parameters for the 30-s epochs
 true_par = c(c(matrix(c(4.101165   , 2.936901,

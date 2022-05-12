@@ -114,15 +114,15 @@ mice_format = data.frame("t1"    = NA,
 
 state_names <- c("limbo", "is", "nrem", "rem", "")
 pat_num = 1
-for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample/*.rda"))) {
+for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample_2/*.rda"))) {
   
-  Dir <- Sys.glob("Data_format/Exported_ephys_downsample/*.rda")[ll]
+  Dir <- Sys.glob("Data_format/Exported_ephys_downsample_2/*.rda")[ll]
   
   load(Dir)
   
   # For the ones that had to be broken up
-  small_check = substring(Dir, 39)
-  if(nchar(small_check) > 16) mice_data = mice_data_small
+  # small_check = substring(Dir, 39)
+  # if(nchar(small_check) > 16) mice_data = mice_data_small
   
   # Adding a time component corresponding to the frequency of observations
   mice_data$t = seq(from = 0, by = 1/556, length.out = nrow(mice_data))
@@ -131,10 +131,10 @@ for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample/*.rda"))) {
                        "theta" = NA, "alpha" = NA, "beta" = NA)
   
   # # How do these proportions change over time (every 5 seconds)
-  # index_seq = seq(0, nrow(mice_data), 2780)
+  index_seq = seq(0, nrow(mice_data), 2780)
   
   # How do these proportions change over time (every 15 seconds)
-  index_seq = seq(0, nrow(mice_data), 8340)
+  # index_seq = seq(0, nrow(mice_data), 8340)
   
   # # How do these proportions change over time (every 30 seconds)
   # index_seq = seq(0, nrow(mice_data), 16680)
@@ -145,8 +145,8 @@ for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample/*.rda"))) {
     e_ind = index_seq[i+1]
     test = mice_data[s_ind:e_ind, ] 
     
-    wave_prop = fft_fnc_15(test)
-    # wave_prop = fft_fnc(test)
+    # wave_prop = fft_fnc_15(test)
+    wave_prop = fft_fnc(test)
     
     t1 = head(test$t,1)
     t2 = tail(test$t,1)
@@ -187,4 +187,4 @@ for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample/*.rda"))) {
 mice_format = mice_format[-1, ] # First index is place holder
 rownames(mice_format) = NULL
 
-save(mice_format, file = "Data_format/mice_format_sub_total_15.rda")
+save(mice_format, file = "Data_format/mice_format_sub_total_split.rda")
