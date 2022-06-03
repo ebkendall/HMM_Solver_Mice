@@ -156,7 +156,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
 # The mcmc routine for samping the parameters
 # -----------------------------------------------------------------------------
 mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
-                         steps, burnin, n_cores){
+                         steps, burnin, n_cores, ind, trialNum){
 
   cl <- makeCluster(n_cores, outfile="")
   registerDoParallel(cl)
@@ -171,8 +171,10 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
                  par_index$l_beta))
   n_group = length(group)
 
-  pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
-  pscale = rep( .0001, n_group)
+  # pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
+  load(paste0('Model_out/pcov_4_', trialNum - 1, '.rda'))
+  # pscale = rep( .0001, n_group)
+  load(paste0('Model_out/pscale_4_', trialNum - 1, '.rda'))
   accept = rep( 0, n_group)
 
   # Evaluate the log_post of the initial pars
@@ -265,6 +267,10 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
 
   stopCluster(cl)
   print(accept/(steps-burnin))
+
+  save(pcov, file = paste0("Model_out/pcov_", ind, "_", trialNum, ".rda"))
+  save(pscale, file = paste0("Model_out/pscale_", ind, "_", trialNum, ".rda"))
+
   return(list( chain=chain[burnin:steps,], accept=accept/(steps-burnin),
                pscale=pscale))
 }
