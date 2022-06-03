@@ -4,16 +4,28 @@ ind = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 set.seed(ind)
 trialNum = 25
 
-init_par = pars =  c(10.0050,   4.1675,  12.1816,  -1.9492,   3.6943,  -3.1640,   3.9072,  -2.9780,
-                      2.2770, -77.7631, -14.1756,   3.5643,   0.4594,   3.0818,   0.8064,  -0.6416,
-                     -3.1180,   0.5931,  -0.1604,   0.3956,  -1.1921,   4.6106,  13.2611,   1.6711,
-                      7.6776,  -5.9033, -17.9331, -32.6448,  -7.4676, -24.5494, -25.3553, -10.4891,
-                     -4.3325, -12.3260,   0.1338,  -4.7456,   3.8262,   3.3905,   2.4872,   1.5384,
-                      2.7699,   3.0584,   2.2187,   1.0079,   3.4377,   2.6117,   1.6008,   0.7604,
-                      2.5420,   2.1901,   1.2825,   0.6821)
+init_par = pars =  c(c(matrix(c(3.31784266, -0.03402560,
+                                2.83361407, -0.08131234,
+                                2.83361407, -0.08131234, # new row
+                                3.84319607, -0.02059774,
+                                0.65920888, 0.05320999,
+                                -0.10363139, 0.54404285,
+                                3.93103199, -0.05186608, 
+                                1.64904538, 0.24675486,
+                                -11.93696963, -8.67149268,
+                                0.96464474, 0.25204027,
+                                -44.11083783, 3.88994039,
+                                -9.95628008, 2.54984249), ncol=2, byrow = T)),
+                    c(-0.50031735, -30.89456518, -18.57665356, -17.15469869,
+                      -6.95465942, -8.53797330), 
+                    c(1.25816427, -1.15710610),
+                    c(3.53763678, 2.89439678, 1.95569138, 1.04666927, 
+                      2.61727157, 2.65737401, 1.81185671, 0.82234054, 
+                      3.90673024, 2.54431988, 1.53650704, 0.73327927,
+                      1.90583103, 1.77204698, 0.72612163, 0.04022586))
 
-par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
-                  l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
+par_index = list( beta=1:24, misclass=25:30, pi_logit=31:32, 
+                  l_delta = 33:36, l_theta=37:40, l_alpha=41:44, l_beta=45:48)
 
 prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
                         prior_sd=rep( 20, length(init_par)))
@@ -38,14 +50,14 @@ steps = 25000
 burnin = 5000
 n_cores = 20
 
-n_post = 5000; steps2 = 25000
-index_post = (steps2 - burnin - n_post + 1):(steps2 - burnin)
-load(paste0('Model_out/mcmc_out_', 4, '_', trialNum - 1,'.rda'))
-in_post_temp = tail(index_post, 300)
-par_temp = colMeans(mcmc_out$chain[in_post_temp,])
-rownames(par_temp) = NULL
-init_par = par_temp
-pars = par_temp
+# n_post = 5000; steps2 = 25000
+# index_post = (steps2 - burnin - n_post + 1):(steps2 - burnin)
+# load(paste0('Model_out/mcmc_out_', 4, '_', trialNum - 1,'.rda'))
+# in_post_temp = tail(index_post, 300)
+# par_temp = colMeans(mcmc_out$chain[in_post_temp,])
+# rownames(par_temp) = NULL
+# init_par = par_temp
+# pars = par_temp
 
 print(pars)
 

@@ -187,4 +187,8 @@ for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample_2/*.rda"))) 
 mice_format = mice_format[-1, ] # First index is place holder
 rownames(mice_format) = NULL
 
+# Reformat to have three states
+mice_format$state = mice_format$state - 1
+mice_format$state[mice_format$state == 98] = 99
+
 save(mice_format, file = "Data_format/mice_format_sub_total_split.rda")
