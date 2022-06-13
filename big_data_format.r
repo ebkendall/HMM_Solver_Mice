@@ -145,37 +145,37 @@ table(mice_format$ptnum)
 mice_format = mice_format[!(mice_format$ptnum %in% 34:59), ]
 # mice_format = mice_format[mice_format$ptnum == 1, ]
 # 
-pdf('Plots/Supplement/mice_format_sub_total_split_filt.pdf')
+pdf('Plots/Supplement/mice_format_sanityCheck.pdf')
 par(mfrow = c(2,2))
-hist(mice_format$delta[mice_format$state == 2],
+hist(mice_format$delta[mice_format$state == 1],
      main = "Delta, state 2")
-hist(mice_format$delta[mice_format$state == 3],
+hist(mice_format$delta[mice_format$state == 2],
      main = "Delta, state 3")
-hist(mice_format$delta[mice_format$state == 4],
+hist(mice_format$delta[mice_format$state == 3],
      main = "Delta, state 4")
 hist(mice_format$delta[mice_format$state == 99],
      main = "Delta, state 99")
-hist(mice_format$theta[mice_format$state == 2],
+hist(mice_format$theta[mice_format$state == 1],
      main = "Theta, state 2")
-hist(mice_format$theta[mice_format$state == 3],
+hist(mice_format$theta[mice_format$state == 2],
      main = "Theta, state 3")
-hist(mice_format$theta[mice_format$state == 4],
+hist(mice_format$theta[mice_format$state == 3],
      main = "Theta, state 4")
 hist(mice_format$theta[mice_format$state == 99],
      main = "Theta, state 99")
-hist(mice_format$alpha[mice_format$state == 2],
+hist(mice_format$alpha[mice_format$state == 1],
      main = "alpha, state 2")
-hist(mice_format$alpha[mice_format$state == 3],
+hist(mice_format$alpha[mice_format$state == 2],
      main = "alpha, state 3")
-hist(mice_format$alpha[mice_format$state == 4],
+hist(mice_format$alpha[mice_format$state == 3],
      main = "alpha, state 4")
 hist(mice_format$alpha[mice_format$state == 99],
      main = "alpha, state 99")
-hist(mice_format$beta[mice_format$state == 2],
+hist(mice_format$beta[mice_format$state == 1],
      main = "beta, state 2")
-hist(mice_format$beta[mice_format$state == 3],
+hist(mice_format$beta[mice_format$state == 2],
      main = "beta, state 3")
-hist(mice_format$beta[mice_format$state == 4],
+hist(mice_format$beta[mice_format$state == 3],
      main = "beta, state 4")
 hist(mice_format$beta[mice_format$state == 99],
      main = "beta, state 99")

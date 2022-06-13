@@ -18,54 +18,38 @@ index_post = (steps - burnin - n_post + 1):(steps - burnin)
 par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
 
-index_seeds = c(4,5,6)
-trialNum = 24 # Change this everytime!!!! ****************
+index_seeds = c(7:7)
+trialNum = 30 # Change this everytime!!!! ****************
 
 # Initial parameters for the 30-s epochs
-true_par = c(c(matrix(c(4.101165   , 2.936901,
-                        2.592022   , 0.4181154,
-                        -3.341068  , -1.838769,
-                        -2.744266  , 6.732399,
-                        1.360784   , -2.182402,
-                        -0.4102578 , 1.793358,
-                        -2.385557  , 1.524106,
-                        1.001188   , 4.97785,
-                        -4.059381  , -1.370959,
-                        -0.4864039 , 3.183361,
-                        -2.636722  , 1.41935), ncol=2, byrow=T)),
-                        c(-7.736442, 4.381084, -2.01876,
-                          -1.401513, 2.879382, -4.285909,
-                          -1.589179, -0.1894496, -4.367929,
-                          -7.096464, -4.536896, -2.845439),
-                        c(-1.049866, 1.229301), 
-                        c(3.737221, 5.801327, -0.6352715, -2.009164),
-                        c(3.5487, 3.786715, 2.98324, 2.350825),
-                        c(-3.159109, 2.168725, 4.431401, 4.442483),
-                        c(3.644593, 3.197575, 2.481969, 1.792291))
+true_par = c(c(matrix(c(3.31784266, -0.03402560,
+                                2.83361407, -0.08131234,
+                                2.83361407, -0.08131234, # new row
+                                3.84319607, -0.02059774,
+                                0.65920888, 0.05320999,
+                               -0.10363139, 0.54404285), ncol=2, byrow = T)),
+                    c(-0.50031735, -30.89456518, -18.57665356, -17.15469869,
+                      -6.95465942, -8.53797330), 
+                    c(-1.15710610),
+                    c(3.53763678, 2.89439678, 3.90673024, 
+                      2.61727157, 2.65737401, 2.54431988, 
+                      1.77204698, 1.90583103, 1.53650704,
+                      0.72612163, 0.72612163, 0.72612163))
 
-labels <- c("Baseline: LIMBO --> IS",  "Baseline: LIMBO --> NREM",
-            "Baseline: IS --> LIMBO",  "Baseline: IS --> NREM",
-            "Baseline: IS --> REM",    "Baseline: NREM --> LIMBO",
-            "Baseline: NREM --> IS",   "Baseline: NREM --> REM",
-            "Baseline: REM --> LIMBO", "Baseline: REM --> IS",
-            "Baseline: REM --> NREM", 
-            "Time: LIMBO --> IS",  "Time: LIMBO --> NREM",
-            "Time: IS --> LIMBO",  "Time: IS --> NREM",
-            "Time: IS --> REM",    "Time: NREM --> LIMBO",
+labels <- c("Baseline: IS --> NREM", "Baseline: IS --> REM",    
+            "Baseline: NREM --> IS", "Baseline: NREM --> REM",
+            "Baseline: REM --> IS", "Baseline: REM --> NREM", 
+            "Time: IS --> NREM", "Time: IS --> REM",    
             "Time: NREM --> IS",   "Time: NREM --> REM",
-            "Time: REM --> LIMBO", "Time: REM --> IS",
-            "Time: REM --> NREM",
-            "P( obs. LIMBO | true IS )", "P( obs. LIMBO | true NREM )",
-            "P( obs. LIMBO | true REM )", "P( obs. IS | true LIMBO )", 
+            "Time: REM --> IS", "Time: REM --> NREM",
             "P( obs. IS | true NREM )", "P( obs. IS | true REM )",
-            "P( obs. NREM | true LIMBO )", "P( obs. NREM | true IS )",
-            "P( obs. NREM | true REM )", "P( obs. REM | true LIMBO )",
-            "P( obs. REM | true IS )", "P( obs. REM | true NREM )",
-            "P( init IS )", "P( init NREM )", 
-            "Delta (LIMBO)", "Theta (LIMBO)", "Alpha (LIMBO)", "Beta (LIMBO)",
-            "Delta (IS)", "Theta (IS)", "Alpha (IS)", "Beta (IS)",
-            "Delta (NREM)", "Theta (NREM)", "Alpha (NREM)", "Beta (NREM)",
-            "Delta (REM)", "Theta (REM)", "Alpha (REM)", "Beta (REM)")
+            "P( obs. NREM | true IS )", "P( obs. NREM | true REM )", 
+            "P( obs. REM | true IS )", "P( obs. REM | true NREM )", 
+            "P( init NREM )", 
+            "Delta (IS)", "Delta (NREM)", "Delta (REM)",
+            "Theta (IS)", "Theta (NREM)", "Theta (REM)",
+            "Alpha (IS)", "Alpha (NREM)", "Alpha (REM)",
+            "Beta (IS)", "Beta (NREM)", "Beta (REM)")
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------

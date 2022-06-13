@@ -1,34 +1,73 @@
 source("mcmc_routine.r")
 
-ind = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
+# ind = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
+ind=2
 set.seed(ind)
-trialNum = 25
+trialNum = 31
 
-init_par = pars =  c(c(matrix(c(3.31784266, -0.03402560,
-                                2.83361407, -0.08131234,
-                                2.83361407, -0.08131234, # new row
-                                3.84319607, -0.02059774,
-                                0.65920888, 0.05320999,
-                                -0.10363139, 0.54404285,
-                                3.93103199, -0.05186608, 
-                                1.64904538, 0.24675486,
-                                -11.93696963, -8.67149268,
-                                0.96464474, 0.25204027,
-                                -44.11083783, 3.88994039,
-                                -9.95628008, 2.54984249), ncol=2, byrow = T)),
-                    c(-0.50031735, -30.89456518, -18.57665356, -17.15469869,
-                      -6.95465942, -8.53797330), 
-                    c(1.25816427, -1.15710610),
-                    c(3.53763678, 2.89439678, 1.95569138, 1.04666927, 
-                      2.61727157, 2.65737401, 1.81185671, 0.82234054, 
-                      3.90673024, 2.54431988, 1.53650704, 0.73327927,
-                      1.90583103, 1.77204698, 0.72612163, 0.04022586))
+# init_par = pars =  c(c(matrix(c(3.31784266, -0.03402560,
+#                                 2.83361407, -0.08131234,
+#                                 2.83361407, -0.08131234, # new row
+#                                 3.84319607, -0.02059774,
+#                                 0.65920888, 0.05320999,
+#                                -0.10363139, 0.54404285), ncol=2, byrow = T)),
+#                     c(-4.5, -4.5, -4.5, -4.5, -4.5, -4.5), 
+#                     c(-1.15710610),
+#                     c(3.53763678, 2.89439678, 3.90673024, 
+#                       2.61727157, 2.65737401, 2.54431988, 
+#                       1.77204698, 1.90583103, 1.53650704,
+#                       0.72612163, 0.72612163, 0.72612163))
 
-par_index = list( beta=1:24, misclass=25:30, pi_logit=31:32, 
-                  l_delta = 33:36, l_theta=37:40, l_alpha=41:44, l_beta=45:48)
+# par_index = list( beta=1:12, misclass=13:18, pi_logit=19, 
+#                   l_delta = 20:22, l_theta=23:25, l_alpha=26:28, l_beta=29:31)
 
-prior_par = data.frame( prior_mean=rep( 0, length(init_par)),
-                        prior_sd=rep( 20, length(init_par)))
+
+init_par = pars =  c(c(matrix(c(-1, 0,
+                                -1, 0,
+                                -1, 0,
+                                -1, 0,
+                                -1, 0,
+                                -1, 0), ncol=2, byrow = T)),
+                    c(-1),
+                    c(0, 0, 0, 
+                      0, 0, 0, 
+                      0, 0, 0, 
+                      0, 0, 0))
+
+par_index = list( beta=1:12, pi_logit=13, l_delta = 14:16, l_theta=17:19, 
+                  l_alpha=20:22, l_beta=23:25)
+
+
+
+prior_mean = c(c(matrix(c(0, 0,
+                          0, 0,
+                          0, 0, # new row
+                          0, 0,
+                          0, 0,
+                          0, 0), ncol=2, byrow = T)),
+                    # c(-4.5, -4.5, -4.5, -4.5, -4.5, -4.5), 
+                    c(0),
+                    c(0, 0, 0, 
+                      0, 0, 0, 
+                      0, 0, 0,
+                      0, 0, 0))
+
+prior_sd = c(c(matrix(c(20, 20,
+                        20, 20,
+                        20, 20, # new row
+                        20, 20,
+                        20, 20,
+                        20, 20), ncol=2, byrow = T)),
+                  # c(7/6, 7/6, 7/6, 7/6, 7/6, 7/6), 
+                  c(20),
+                  c(20, 20, 20, 
+                    20, 20, 20, 
+                    20, 20, 20,
+                    20, 20, 20))
+
+
+prior_par = data.frame( prior_mean= prior_mean,
+                        prior_sd= prior_sd)
 
 load('Data_format/mice_format_sub_total_split.rda')
 mice_format = mice_format[!(mice_format$ptnum %in% 34:59), ]
@@ -39,8 +78,6 @@ sub_ind = c(101,  77,   3,  97,  70,  84, 113,  82,  30,  88,   2,  24,   1,  61
  
 mice_format = mice_format[(mice_format$ptnum %in% sub_ind), ]
 
-print(table(mice_format$state))
-
 temp_data = as.matrix(mice_format); rownames(temp_data) = NULL
 id = temp_data[,"ptnum"]
 y_1 = temp_data[,"state"]
@@ -48,11 +85,11 @@ y_2 = temp_data[,c("delta", "theta", "alpha", "beta"), drop=F]
 t = temp_data[,"t1"]
 steps = 25000
 burnin = 5000
-n_cores = 20
+n_cores = 2
 
 # n_post = 5000; steps2 = 25000
 # index_post = (steps2 - burnin - n_post + 1):(steps2 - burnin)
-# load(paste0('Model_out/mcmc_out_', 4, '_', trialNum - 1,'.rda'))
+# load(paste0('Model_out/mcmc_out_', 7, '_', trialNum - 1,'.rda'))
 # in_post_temp = tail(index_post, 300)
 # par_temp = colMeans(mcmc_out$chain[in_post_temp,])
 # rownames(par_temp) = NULL
