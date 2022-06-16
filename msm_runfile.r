@@ -26,10 +26,11 @@ dimnames(qmat) <- list( c('IS','NREM','REM'), c('IS','NREM','REM'))
 # Run the msm implementation ------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
 
-emat = matrix(c(    1,   exp(-3), exp(-3),
-                exp(-3),       1, exp(-3),
-                exp(-3), exp(-3),       1), ncol=3, byrow=TRUE)
-emat = emat / rowSums(emat)
+# emat = matrix(c(    1,   exp(-3), exp(-3),
+#                 exp(-3),       1, exp(-3),
+#                 exp(-3), exp(-3),       1), ncol=3, byrow=TRUE)
+# emat = emat / rowSums(emat)
+emat = diag(3)
 dimnames(emat) <- list( c('IS','NREM','REM'), c('IS','NREM','REM'))
 
 Output_msm <- msm(state ~ t1, subject=ptnum, data=mice_format, qmatrix=qmat, covariates= ~ 1 + t1, 

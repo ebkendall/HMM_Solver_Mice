@@ -18,8 +18,8 @@ index_post = (steps - burnin - n_post + 1):(steps - burnin)
 par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
 
-index_seeds = c(7:7)
-trialNum = 30 # Change this everytime!!!! ****************
+index_seeds = c(3,7)
+trialNum = 31 # Change this everytime!!!! ****************
 
 # Initial parameters for the 30-s epochs
 true_par = c(c(matrix(c(3.31784266, -0.03402560,
@@ -62,7 +62,7 @@ for(i in 1:length(cred_set)) { cred_set[[i]] = data.frame('lower' = c(-1), 'uppe
 ind = 0
 
 for (i in index_seeds) {
-    file_name = paste0(dir,'mcmc_out_',toString(i),'_', trialNum,'.rda')
+    file_name = paste0(dir,'mcmc_out_',toString(i),'_', trialNum,'_test.rda')
     if(file.exists(file_name)) {
         load(file_name)
         ind = ind + 1
@@ -101,7 +101,7 @@ post_means = matrix(nrow = ind, ncol = length(labels))
 ind = 0
 
 for(seed in index_seeds){
-    file_name = paste0(dir,'mcmc_out_',toString(seed),'_', trialNum, '.rda')
+    file_name = paste0(dir,'mcmc_out_',toString(seed),'_', trialNum, '_test.rda')
     if (file.exists(file_name)) {
         load(file_name)
         ind = ind + 1

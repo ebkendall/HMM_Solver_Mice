@@ -44,7 +44,7 @@ model_t <- function(t,p,parms) {
 fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) {
 
     # Order: IS, NREM, REM
-    init_logit = c( 1, exp(pars[par_index$pi_logit][1]), 0)
+    init_logit = c( 1, exp(pars[par_index$pi_logit][1]), exp(pars[par_index$pi_logit][2]))
     init = init_logit / sum(init_logit)
 
     # resp_fnc = matrix(c(1, exp(pars[par_index$misclass][1]), exp(pars[par_index$misclass][2]), 
@@ -74,7 +74,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
   
     log_total_val = foreach(i=unique(id), .combine='+', 
                             .export = c("model_t", "Q"), 
-                            .packages = c("deSolve", "gtools")) %dopar% {
+                            .packages = c("deSolve", "gtools")) %do% {
         
         f_i = val = 1
 
@@ -118,6 +118,8 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
             }
 
             val = f_i %*% P %*% D_i
+            # print(i)
+            # print(val)
 
             norm_val = sqrt(sum(val^2))
             f_i = val / norm_val
@@ -130,7 +132,6 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
     mean = prior_par$prior_mean
     sd = diag(prior_par$prior_sd)
     log_prior_dens = dmvnorm( x=pars, mean=mean, sigma=sd, log=T)
-
     return(log_total_val + log_prior_dens)
 
 }

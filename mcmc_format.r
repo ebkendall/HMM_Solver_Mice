@@ -169,8 +169,8 @@ for (ll in 1:length(Sys.glob("Data_format/Exported_ephys_downsample_2/*.rda"))) 
   temp_df$state[which(temp_df$state > 4)] = 99
   
   # Center and scale the time coefficient
-  temp_df$t1 = temp_df$t1 - mean(temp_df$t1)
-  temp_df$t1 = temp_df$t1 / sd(temp_df$t1)
+  # temp_df$t1 = temp_df$t1 - mean(temp_df$t1)
+  # temp_df$t1 = temp_df$t1 / sd(temp_df$t1)
   
   # Exclude any files with only 99s
   if(length(unique(temp_df$state)) > 1) {
@@ -190,5 +190,13 @@ rownames(mice_format) = NULL
 # Reformat to have three states
 mice_format$state = mice_format$state - 1
 mice_format$state[mice_format$state == 98] = 99
+
+time_mean = mean(mice_format$t1)
+save(time_mean, file = "Data_format/time_mean.rda")
+mice_format$t1 = mice_format$t1 - mean(mice_format$t1)
+
+time_sd = sd(mice_format$t1)
+save(time_sd, file = "Data_format/time_sd.rda")
+mice_format$t1 = mice_format$t1 / sd(mice_format$t1)
 
 save(mice_format, file = "Data_format/mice_format_sub_total_split.rda")
