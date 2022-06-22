@@ -24,6 +24,28 @@ Q <- function(t,beta){
                 nrow = 3, byrow = T)
     diag(qmat) = -rowSums(qmat)
 
+    # betaMat = matrix(beta, ncol = 2, byrow = F) # determine the covariates
+  
+    # q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from IS    to NREM
+    # q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from IS    to REM
+    # q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to LIMBO
+    # q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from NREM  to IS
+    # q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from NREM  to REM
+    # q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
+    # q7  = exp( c(1,t) %*% betaMat[7,] )  # Transition from REM   to IS
+    # q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from REM   to NREM
+    # q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
+    # q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from LIMBO to IS
+    # q11 = exp( c(1,t) %*% betaMat[11,] ) # Transition from LIMBO to NREM
+    # q12 = exp( c(1,t) %*% betaMat[12,] ) # Transition from LIMBO to REM
+    
+    # qmat = matrix(c(  0,  q1,  q2, q3,
+    #                  q4,   0,  q5, q6,
+    #                  q7,  q8,   0, q9,
+    #                 q10, q11, q12,  0),
+    #             nrow = 4, byrow = T)
+    # diag(qmat) = -rowSums(qmat)
+
   return(qmat)
 }
 
@@ -74,7 +96,7 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
   
     log_total_val = foreach(i=unique(id), .combine='+', 
                             .export = c("model_t", "Q"), 
-                            .packages = c("deSolve", "gtools")) %do% {
+                            .packages = c("deSolve", "gtools")) %dopar% {
         
         f_i = val = 1
 
@@ -110,11 +132,12 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
             d_1 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[1,])
             d_2 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[2,])
             d_3 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[3,])
+            d_4 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[4,])
 
             if(y_1_i[k] <= 3) { # observed
-              D_i = diag(c(d_1,d_2,d_3) * resp_fnc[, y_1_i[k]])
+              D_i = diag(c(d_1,d_2,d_3,0) * resp_fnc[, y_1_i[k]])
             } else { # unknown 
-              D_i = diag(c(d_1,d_2,d_3))
+              D_i = diag(c(d_1,d_2,d_3,d_4))
             }
 
             val = f_i %*% P %*% D_i
@@ -155,14 +178,14 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
   #              c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
   #                par_index$l_beta))
   group = list(c(par_index$beta, par_index$pi_logit),
-               c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
+               c(par_index$l_delta, par_index$l_theta), c(par_index$l_alpha, 
                  par_index$l_beta))
   n_group = length(group)
 
-  pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
-  # load(paste0('Model_out/pcov_7_', trialNum - 1, '.rda'))
-  pscale = rep( .0001, n_group)
-  # load(paste0('Model_out/pscale_7_', trialNum - 1, '.rda'))
+  # pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
+  load(paste0('Model_out/pcov_5_', trialNum - 1, '.rda'))
+  # pscale = rep( .0001, n_group)
+  load(paste0('Model_out/pscale_5_', trialNum - 1, '.rda'))
   accept = rep( 0, n_group)
 
   # Evaluate the log_post of the initial pars

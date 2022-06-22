@@ -191,12 +191,12 @@ rownames(mice_format) = NULL
 mice_format$state = mice_format$state - 1
 mice_format$state[mice_format$state == 98] = 99
 
-time_mean = mean(mice_format$t1)
-save(time_mean, file = "Data_format/time_mean.rda")
-mice_format$t1 = mice_format$t1 - mean(mice_format$t1)
+# time_mean = mean(mice_format$t1)
+# save(time_mean, file = "Data_format/time_mean.rda")
+# mice_format$t1 = mice_format$t1 - mean(mice_format$t1)
 
-time_sd = sd(mice_format$t1)
-save(time_sd, file = "Data_format/time_sd.rda")
-mice_format$t1 = mice_format$t1 / sd(mice_format$t1)
+# time_sd = sd(mice_format$t1)
+# save(time_sd, file = "Data_format/time_sd.rda")
+mice_format$t1 = mice_format$t1 / 1000
 
 save(mice_format, file = "Data_format/mice_format_sub_total_split.rda")
