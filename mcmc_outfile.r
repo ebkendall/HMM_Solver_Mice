@@ -17,39 +17,47 @@ index_post = (steps - burnin - n_post + 1):(steps - burnin)
 
 # par_index = list( beta=1:22, misclass=23:34, pi_logit=35:36, 
 #                   l_delta = 37:40, l_theta=41:44, l_alpha=45:48, l_beta=49:52)
-par_index = list( beta=1:12, pi_logit=13:14, l_delta = 15:17, l_theta=18:20, 
-                  l_alpha=21:23, l_beta=24:26)
+par_index = list( beta=1:24, pi_logit=25:27, l_delta = 28:31, l_theta=32:35, 
+                  l_alpha=36:39, l_beta=40:43)
 
-index_seeds = c(3)
-trialNum = 36 # Change this everytime!!!! ****************
+index_seeds = c(5,7:9)
+trialNum = 43 # Change this everytime!!!! ****************
 
 # Initial parameters for the 30-s epochs
-true_par = c(c(matrix(c(-1, 0,
-                        -1, 0,
-                        -1, 0,
-                        -1, 0,
-                        -1, 0,
-                        -1, 0), ncol=2, byrow = T)),
-                    c(0, 0),
-                    log(c(0.42548916, 0.54504416, 0.34652136,
-                      0.35085130, 0.30013012, 0.38799344,
-                      0.16622615, 0.11803219, 0.19766568,
-                      0.05743339, 0.03679353, 0.06781952)))
+true_par = c(c(matrix(c(-6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0,
+                        -6, 0), ncol=2, byrow = T)),
+            c(0, 0, 0),
+            log(c(0.42844057, 0.52802631, 0.46033976, 0.52947184,
+              0.34666468, 0.30778351, 0.36753584, 0.30819960,
+              0.17758807, 0.12382649, 0.13143568, 0.11718367,
+              0.04730668, 0.04036369, 0.04068871, 0.04514489)))
 
-labels <- c("Baseline: IS --> NREM", "Baseline: IS --> REM",    
-            "Baseline: NREM --> IS", "Baseline: NREM --> REM",
-            "Baseline: REM --> IS", "Baseline: REM --> NREM", 
-            "Time: IS --> NREM", "Time: IS --> REM",    
-            "Time: NREM --> IS",   "Time: NREM --> REM",
-            "Time: REM --> IS", "Time: REM --> NREM",
+labels <- c("Baseline: IS --> NREM", "Baseline: IS --> REM", "Baseline: IS --> LIMBO",   
+            "Baseline: NREM --> IS", "Baseline: NREM --> REM", "Baseline: NREM --> LIMBO",
+            "Baseline: REM --> IS", "Baseline: REM --> NREM", "Baseline: REM --> LIMBO",
+            "Baseline: LIMBO --> IS", "Baseline: LIMBO --> NREM", "Baseline: LIMBO --> REM",
+            "Time: IS --> NREM", "Time: IS --> REM", "Time: IS --> LIMBO",      
+            "Time: NREM --> IS",   "Time: NREM --> REM", "Time: NREM --> LIMBO",
+            "Time: REM --> IS", "Time: REM --> NREM", "Time: REM --> LIMBO",
+            "Time: LIMBO --> IS", "Time: LIMBO --> NREM", "Time: LIMBO --> REM",
             # "P( obs. IS | true NREM )", "P( obs. IS | true REM )",
             # "P( obs. NREM | true IS )", "P( obs. NREM | true REM )", 
             # "P( obs. REM | true IS )", "P( obs. REM | true NREM )", 
-            "P( init NREM )", "P( init REM )", 
-            "Delta (IS)", "Delta (NREM)", "Delta (REM)",
-            "Theta (IS)", "Theta (NREM)", "Theta (REM)",
-            "Alpha (IS)", "Alpha (NREM)", "Alpha (REM)",
-            "Beta (IS)", "Beta (NREM)", "Beta (REM)")
+            "P( init NREM )", "P( init REM )", "P( init LIMBO )",
+            "Delta (IS)", "Delta (NREM)", "Delta (REM)", "Delta (LIMBO)",
+            "Theta (IS)", "Theta (NREM)", "Theta (REM)", "Theta (LIMBO)",
+            "Alpha (IS)", "Alpha (NREM)", "Alpha (REM)", "Alpha (LIMBO)",
+            "Beta (IS)", "Beta (NREM)", "Beta (REM)", "Beta (LIMBO)")
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -107,10 +115,11 @@ for(seed in index_seeds){
         ind = ind + 1
         print(paste0(ind, ": ", file_name))
         print(mcmc_out$accept)
-        print(c(tail(round(mcmc_out$chain, digits = 4), 1)))
-
+        in_post_temp = tail(index_post, 300)
+        print(colMeans(mcmc_out$chain[in_post_temp,]))
+        
         chain_list[[ind]] = mcmc_out$chain[index_post,]
-        post_means[ind,] <- colMeans(mcmc_out$chain[index_post,])
+        # post_means[ind,] <- colMeans(mcmc_out$chain[index_post,])
     }
 }
 

@@ -11,62 +11,49 @@ Q <- function(t,beta){
 
     betaMat = matrix(beta, ncol = 2, byrow = F) # determine the covariates
   
-    q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from IS to NREM
-    q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from IS to REM
-    q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from NREM to IS
-    q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from NREM to REM
-    q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from REM  to IS
-    q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from REM  to NREM
+    q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from IS    to NREM
+    q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from IS    to REM
+    q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to LIMBO
+    q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from NREM  to IS
+    q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from NREM  to REM
+    q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
+    q7  = exp( c(1,t) %*% betaMat[7,] )  # Transition from REM   to IS
+    q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from REM   to NREM
+    q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
+    q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from LIMBO to IS
+    q11 = exp( c(1,t) %*% betaMat[11,] ) # Transition from LIMBO to NREM
+    q12 = exp( c(1,t) %*% betaMat[12,] ) # Transition from LIMBO to REM
     
-    qmat = matrix(c(  0,  q1, q2,
-                     q3,   0, q4,
-                     q5,  q6,  0),
-                nrow = 3, byrow = T)
+    qmat = matrix(c(  0,  q1,  q2, q3,
+                     q4,   0,  q5, q6,
+                     q7,  q8,   0, q9,
+                    q10, q11, q12,  0),
+                nrow = 4, byrow = T)
     diag(qmat) = -rowSums(qmat)
-
-    # betaMat = matrix(beta, ncol = 2, byrow = F) # determine the covariates
-  
-    # q1  = exp( c(1,t) %*% betaMat[1,] )  # Transition from IS    to NREM
-    # q2  = exp( c(1,t) %*% betaMat[2,] )  # Transition from IS    to REM
-    # q3  = exp( c(1,t) %*% betaMat[3,] )  # Transition from IS    to LIMBO
-    # q4  = exp( c(1,t) %*% betaMat[4,] )  # Transition from NREM  to IS
-    # q5  = exp( c(1,t) %*% betaMat[5,] )  # Transition from NREM  to REM
-    # q6  = exp( c(1,t) %*% betaMat[6,] )  # Transition from NREM  to LIMBO
-    # q7  = exp( c(1,t) %*% betaMat[7,] )  # Transition from REM   to IS
-    # q8  = exp( c(1,t) %*% betaMat[8,] )  # Transition from REM   to NREM
-    # q9  = exp( c(1,t) %*% betaMat[9,] )  # Transition from REM   to LIMBO
-    # q10 = exp( c(1,t) %*% betaMat[10,] ) # Transition from LIMBO to IS
-    # q11 = exp( c(1,t) %*% betaMat[11,] ) # Transition from LIMBO to NREM
-    # q12 = exp( c(1,t) %*% betaMat[12,] ) # Transition from LIMBO to REM
-    
-    # qmat = matrix(c(  0,  q1,  q2, q3,
-    #                  q4,   0,  q5, q6,
-    #                  q7,  q8,   0, q9,
-    #                 q10, q11, q12,  0),
-    #             nrow = 4, byrow = T)
-    # diag(qmat) = -rowSums(qmat)
 
   return(qmat)
 }
 
 model_t <- function(t,p,parms) {
     qmat = Q(t, parms$b)
-    pmat = matrix(c(  p[1],  p[2],  p[3], 
-                      p[4],  p[5],  p[6], 
-                      p[7],  p[8],  p[9]),
-                nrow = 3, byrow = T)
+    pmat = matrix(c(  p[1],  p[2],  p[3],  p[4],
+                      p[5],  p[6],  p[7],  p[8],
+                      p[9],  p[10], p[11], p[12],
+                      p[13], p[14], p[15], p[16]),
+                nrow = 4, byrow = T)
     
     # Vectorizing the matrix multiplication row-wise
     dP = c(t(pmat %*% qmat))
     return(list(dP))
-
 }
 
 
 fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) {
 
     # Order: IS, NREM, REM
-    init_logit = c( 1, exp(pars[par_index$pi_logit][1]), exp(pars[par_index$pi_logit][2]))
+    init_logit = c( 1, exp(pars[par_index$pi_logit][1]), 
+                    exp(pars[par_index$pi_logit][2]), exp(pars[par_index$pi_logit][3]))
+
     init = init_logit / sum(init_logit)
 
     # resp_fnc = matrix(c(1, exp(pars[par_index$misclass][1]), exp(pars[par_index$misclass][2]), 
@@ -75,24 +62,22 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
     #                     ncol=3, byrow=TRUE)
 
     # resp_fnc = resp_fnc / rowSums(resp_fnc)
-    resp_fnc = diag(3)
+    resp_fnc = diag(4)
     
     lambda_mat = matrix(c(pars[par_index$l_delta], pars[par_index$l_theta],
                           pars[par_index$l_alpha], pars[par_index$l_beta]),
-                        nrow = 3)
+                        nrow = 4)
     colnames(lambda_mat) = c("delta", "theta", "alpha", "beta")
-    rownames(lambda_mat) = c("IS", "NREM", "REM")
+    rownames(lambda_mat) = c("IS", "NREM", "REM", "LIMBO")
 
     lambda_mat = exp(lambda_mat)
-    # dir_coeff = lambda_mat / rowSums(lambda_mat)
 
     beta <- pars[par_index$beta]
 
-    # Needs to be the same dimension as the dP in model_t() and represent the 
-    #   identity matrix
-    p_ic <- c( p1=1,  p2=0, p3=0,
-               p4=0,  p5=1, p6=0,
-               p7=0,  p8=0, p9=1)
+    p_ic <- c( p1=1,  p2=0, p3=0, p4=0,
+               p5=0,  p6=1, p7=0, p8=0,
+               p9=0, p10=0,p11=1,p12=0,
+              p13=0, p14=0,p15=0,p16=1)
   
     log_total_val = foreach(i=unique(id), .combine='+', 
                             .export = c("model_t", "Q"), 
@@ -108,11 +93,12 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
         d_1 = ddirichlet(x = y_2_i[1,], alpha = lambda_mat[1,])
         d_2 = ddirichlet(x = y_2_i[1,], alpha = lambda_mat[2,])
         d_3 = ddirichlet(x = y_2_i[1,], alpha = lambda_mat[3,])
+        d_4 = ddirichlet(x = y_2_i[1,], alpha = lambda_mat[4,])
         
         if(y_1_i[1] <= 3) { # observed
-          f_i = init %*% diag(c(d_1,d_2,d_3) * resp_fnc[, y_1_i[1]])
+          f_i = init %*% diag(c(d_1,d_2,d_3,0) * resp_fnc[, y_1_i[1]])
         } else { 
-          f_i = init %*% diag(c(d_1,d_2,d_3))
+          f_i = init %*% diag(c(d_1,d_2,d_3,d_4))
         }
 
         log_norm = 0
@@ -122,12 +108,11 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
                                       func = model_t, 
                                       parms = list(b=beta))
             
-            P <- matrix(c( out[2,"p1"],  out[2,"p2"],  out[2,"p3"],
-                           out[2,"p4"],  out[2,"p5"],  out[2,"p6"],
-                           out[2,"p7"],  out[2,"p8"],  out[2,"p9"]),
-                        nrow = 3, byrow = T)
-            # print("transition matrix")
-            # print(P)
+            P <- matrix(c( out[2,"p1"],  out[2,"p2"],  out[2,"p3"],  out[2,"p4"],
+                           out[2,"p5"],  out[2,"p6"],  out[2,"p7"],  out[2,"p8"],
+                           out[2,"p9"], out[2,"p10"], out[2,"p11"], out[2,"p12"],
+                          out[2,"p13"], out[2,"p14"], out[2,"p15"], out[2,"p16"]),
+                        nrow = 4, byrow = T)
 
             d_1 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[1,])
             d_2 = ddirichlet(x = y_2_i[k,], alpha = lambda_mat[2,])
@@ -141,8 +126,6 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
             }
 
             val = f_i %*% P %*% D_i
-            # print(i)
-            # print(val)
 
             norm_val = sqrt(sum(val^2))
             f_i = val / norm_val
@@ -178,7 +161,7 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
   #              c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
   #                par_index$l_beta))
   group = list(c(par_index$beta, par_index$pi_logit),
-               c(par_index$l_delta, par_index$l_theta), c(par_index$l_alpha, 
+               c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
                  par_index$l_beta))
   n_group = length(group)
 
