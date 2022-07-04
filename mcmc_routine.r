@@ -56,13 +56,13 @@ fn_log_post_continuous <- function(pars, prior_par, par_index, y_1, y_2, t, id) 
 
     init = init_logit / sum(init_logit)
 
-    # resp_fnc = matrix(c(1, exp(pars[par_index$misclass][1]), exp(pars[par_index$misclass][2]), 
-    #                     exp(pars[par_index$misclass][3]), 1, exp(pars[par_index$misclass][4]), 
-    #                     exp(pars[par_index$misclass][5]), exp(pars[par_index$misclass][6]), 1),
-    #                     ncol=3, byrow=TRUE)
+    resp_fnc = matrix(c(1, exp(pars[par_index$misclass][1]), exp(pars[par_index$misclass][2]), 0,
+                        exp(pars[par_index$misclass][3]), 1, exp(pars[par_index$misclass][4]), 0,
+                        exp(pars[par_index$misclass][5]), exp(pars[par_index$misclass][6]), 1, 0,
+                        0, 0, 0, 1),
+                        ncol=4, byrow=TRUE)
 
-    # resp_fnc = resp_fnc / rowSums(resp_fnc)
-    resp_fnc = diag(4)
+    resp_fnc = resp_fnc / rowSums(resp_fnc)
     
     lambda_mat = matrix(c(pars[par_index$l_delta], pars[par_index$l_theta],
                           pars[par_index$l_alpha], pars[par_index$l_beta]),
@@ -157,18 +157,15 @@ mcmc_routine = function( y_1, y_2, t, id, init_par, prior_par, par_index,
   n_par = length(pars)
   chain = matrix( 0, steps, n_par)
 
-  # group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit),
-  #              c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
-  #                par_index$l_beta))
-  group = list(c(par_index$beta, par_index$pi_logit),
+  group = list(c(par_index$beta, par_index$misclass, par_index$pi_logit),
                c(par_index$l_delta, par_index$l_theta, par_index$l_alpha, 
                  par_index$l_beta))
   n_group = length(group)
 
-  # pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
-  load(paste0('Model_out/pcov_5_', trialNum - 1, '.rda'))
-  # pscale = rep( .0001, n_group)
-  load(paste0('Model_out/pscale_5_', trialNum - 1, '.rda'))
+  pcov = list();	for(j in 1:n_group)  pcov[[j]] = diag(length(group[[j]]))
+  # load(paste0('Model_out/pcov_1_', trialNum - 1, '.rda'))
+  pscale = rep( .0001, n_group)
+  # load(paste0('Model_out/pscale_1_', trialNum - 1, '.rda'))
   accept = rep( 0, n_group)
 
   # Evaluate the log_post of the initial pars

@@ -200,11 +200,3 @@ mice_format$state[mice_format$state == 98] = 99
 mice_format$t1 = mice_format$t1 / 1000
 
 save(mice_format, file = "Data_format/mice_format_sub_total_split.rda")
-
-
-# -----------------------------------------------------------------------------
-# ADDING CENSORED ROWS --------------------------------------------------------
-# -----------------------------------------------------------------------------
-
-
-

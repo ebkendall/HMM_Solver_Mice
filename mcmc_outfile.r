@@ -20,8 +20,8 @@ index_post = (steps - burnin - n_post + 1):(steps - burnin)
 par_index = list( beta=1:24, pi_logit=25:27, l_delta = 28:31, l_theta=32:35, 
                   l_alpha=36:39, l_beta=40:43)
 
-index_seeds = c(5,7:9)
-trialNum = 43 # Change this everytime!!!! ****************
+index_seeds = c(1,3:5,8)
+trialNum = 44 # Change this everytime!!!! ****************
 
 # Initial parameters for the 30-s epochs
 true_par = c(c(matrix(c(-6, 0,
